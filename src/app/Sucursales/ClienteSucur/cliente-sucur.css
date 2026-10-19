@@ -1,0 +1,665 @@
+/* ==========================================================================
+   SUCURSALES DURANGO - MODO CLIENTE
+   ========================================================================== */
+
+.sucursales-page-wrapper {
+  min-height: calc(100vh - 80px);
+  background-color: var(--bg-cream);
+  padding-bottom: 50px;
+}
+
+/* --------------------------------------------------------------------------
+   BARRA DE CONMUTACIÓN DE ROLES
+   -------------------------------------------------------------------------- */
+.role-selector-bar {
+  background: var(--bg-surface);
+  border-bottom: 1px solid rgba(211, 84, 0, 0.15);
+  box-shadow: var(--shadow-sm);
+  padding: 12px 24px;
+}
+
+.role-selector-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.role-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.role-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.role-tag.client-tag {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.role-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.role-switcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.switch-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-chocolate);
+  background: var(--bg-cream);
+  border: 1px solid rgba(211, 84, 0, 0.2);
+  transition: all var(--transition-fast);
+}
+
+.role-pill:hover {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.role-pill.active {
+  background: var(--color-primary);
+  color: var(--text-white);
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px var(--color-primary-glow);
+}
+
+/* --------------------------------------------------------------------------
+   HEADER & FILTROS
+   -------------------------------------------------------------------------- */
+.sucursales-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+.sucursales-header {
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.header-decor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.page-title {
+  font-family: var(--font-serif);
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: var(--text-espresso);
+  margin: 0;
+}
+
+.page-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-chocolate);
+  max-width: 750px;
+  margin: 0;
+}
+
+.search-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: var(--bg-surface);
+  padding: 12px 18px;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid rgba(211, 84, 0, 0.16);
+  box-shadow: var(--shadow-sm);
+}
+
+.search-input-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-cream);
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(211, 84, 0, 0.18);
+  flex: 1;
+  min-width: 260px;
+}
+
+.search-icon {
+  font-size: 1.2rem;
+  color: var(--color-accent);
+}
+
+.input-search {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  color: var(--text-espresso);
+  width: 100%;
+}
+
+.filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-pill {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--bg-cream);
+  color: var(--text-chocolate);
+  border: 1px solid rgba(211, 84, 0, 0.2);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.filter-pill:hover {
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+.filter-pill.active {
+  background: var(--color-primary);
+  color: var(--text-white);
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 10px var(--color-primary-glow);
+}
+
+/* --------------------------------------------------------------------------
+   GRID PRINCIPAL: MAPA (60%) + LISTA SUCURSALES (40%)
+   -------------------------------------------------------------------------- */
+.sucursales-main-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 22px;
+}
+
+@media (max-width: 1024px) {
+  .sucursales-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- SECCIÓN MAPA LEAFLET --- */
+.map-card-container {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid rgba(211, 84, 0, 0.18);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.map-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: #FAF3EC;
+  border-bottom: 1px solid rgba(211, 84, 0, 0.14);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.map-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pin-header-icon {
+  font-size: 1.8rem;
+  color: var(--color-primary);
+}
+
+.map-title {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-espresso);
+  margin: 0;
+}
+
+.map-sub {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.btn-map-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface);
+  color: var(--color-primary);
+  border: 1.5px solid rgba(194, 24, 91, 0.3);
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-map-all:hover {
+  background: var(--color-primary);
+  color: var(--text-white);
+}
+
+.durango-leaflet-map {
+  width: 100%;
+  height: 560px;
+  min-height: 500px;
+  z-index: 1;
+}
+
+.map-footer-legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  background: var(--bg-surface);
+  border-top: 1px solid rgba(211, 84, 0, 0.1);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot.open {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #2E7D32;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.2);
+}
+
+/* --- SIDEBAR LISTA DE SUCURSALES --- */
+.branch-cards-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-title {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-espresso);
+  margin: 0;
+}
+
+.results-badge {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+}
+
+.branches-scroll-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.branches-scroll-list::-webkit-scrollbar {
+  width: 6px;
+}
+.branches-scroll-list::-webkit-scrollbar-thumb {
+  background: #E0BA9B;
+  border-radius: 9999px;
+}
+
+.branch-item-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: 1.5px solid rgba(211, 84, 0, 0.18);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all var(--transition-fast);
+}
+
+.branch-item-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.branch-item-card.active {
+  border-color: var(--color-primary);
+  box-shadow: 0 6px 20px var(--color-primary-glow);
+  background: #FFFDFB;
+}
+
+.card-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+}
+
+.branch-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.branch-item-card:hover .branch-thumb {
+  transform: scale(1.04);
+}
+
+.status-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.75);
+  color: #FFFFFF;
+  backdrop-filter: blur(4px);
+}
+
+.status-badge.open {
+  background: #2E7D32;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.4);
+}
+
+.card-info {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.card-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.zone-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  background: var(--color-accent-light);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.phone-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.phone-icon {
+  font-size: 0.9rem;
+  color: var(--color-accent);
+}
+
+.branch-name {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-espresso);
+  margin: 0;
+}
+
+.branch-address {
+  font-size: 0.8rem;
+  color: var(--text-chocolate);
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.loc-icon {
+  font-size: 0.95rem;
+  color: var(--color-primary);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.branch-ref {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.35;
+}
+
+.branch-schedule {
+  font-size: 0.76rem;
+  color: var(--color-green-agave);
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sched-icon {
+  font-size: 0.9rem;
+}
+
+.feature-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.feature-tag {
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: var(--bg-cream-warm);
+  color: var(--text-chocolate);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.card-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(211, 84, 0, 0.16);
+}
+
+.btn-focus-map {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--color-primary);
+  color: var(--text-white);
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-focus-map:hover {
+  background: var(--color-primary-hover);
+}
+
+.btn-directions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-cream);
+  color: var(--color-accent);
+  border: 1px solid rgba(211, 84, 0, 0.25);
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.btn-directions:hover {
+  background: var(--color-accent-light);
+}
+
+/* --------------------------------------------------------------------------
+   ESTILOS DE PINES Y POPUPS DE LEAFLET
+   -------------------------------------------------------------------------- */
+.pin-marker {
+  width: 38px;
+  height: 38px;
+  background: #C2185B;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 4px 12px rgba(194, 24, 91, 0.45);
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.pin-marker.active {
+  background: #D35400;
+  transform: rotate(-45deg) scale(1.18);
+  box-shadow: 0 6px 18px rgba(211, 84, 0, 0.6);
+}
+
+.pin-icon {
+  transform: rotate(45deg);
+  font-size: 1.1rem;
+}
+
+.branch-popup-card {
+  font-family: var(--font-sans);
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.popup-img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px 8px 0 0;
+  margin-bottom: 8px;
+}
+
+.popup-zone {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #D35400;
+  text-transform: uppercase;
+}
+
+.popup-title {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #2C1810;
+  margin: 2px 0 4px 0;
+}
+
+.popup-addr {
+  font-size: 0.76rem;
+  color: #4A2E2B;
+  margin: 0 0 6px 0;
+}
+
+.popup-status {
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.popup-status.open { color: #2E7D32; }
+.popup-status.closed { color: #C62828; }
+
+.popup-hours {
+  font-size: 0.72rem;
+  color: #84685D;
+  margin: 0 0 8px 0;
+}
+
+.btn-popup-maps {
+  display: block;
+  text-align: center;
+  background: #C2185B;
+  color: #FFFFFF !important;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 9999px;
+  text-decoration: none;
+}

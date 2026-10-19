@@ -1,0 +1,280 @@
+<div class="catalogo-wrapper">
+  <!-- Barra de Conmutación de Roles para Pruebas / Demostración -->
+  <div class="role-selector-bar">
+    <div class="role-selector-container">
+      <div class="role-info">
+        <span class="role-tag client-tag">
+          <span class="material-symbols-outlined">person</span> Modo Cliente
+        </span>
+        <span class="role-desc">Solo puedes explorar el catálogo y seleccionar productos.</span>
+      </div>
+      <div class="role-switcher">
+        <span class="switch-label">Cambiar de rol:</span>
+        <a routerLink="/catalogo/clientes" class="role-pill active">
+          <span class="material-symbols-outlined">person</span> Clientes
+        </a>
+        <a routerLink="/catalogo/trabajadores" class="role-pill">
+          <span class="material-symbols-outlined">badge</span> Trabajadores
+        </a>
+        <a routerLink="/catalogo/admin" class="role-pill">
+          <span class="material-symbols-outlined">admin_panel_settings</span> Administrador
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="catalogo-container">
+    <!-- Encabezado del Catálogo para Clientes -->
+    <header class="catalogo-header">
+      <span class="handwritten-tag">Del horno a tu mesa</span>
+      <h1 class="catalogo-title">Nuestro Catálogo Tradicional</h1>
+      <p class="catalogo-subtitle">
+        Selecciona tus pasteles de autor y panes tradicionales favoritos. Todos nuestros productos se hornean 
+        a diario con mantequilla pura e ingredientes mexicanos de la más alta calidad.
+      </p>
+
+      <!-- Barra de Filtros y Búsqueda -->
+      <div class="filter-controls">
+        <div class="search-box">
+          <span class="material-symbols-outlined search-icon">search</span>
+          <input 
+            type="text" 
+            placeholder="Buscar por nombre, sabor o ingrediente..." 
+            [ngModel]="busqueda()"
+            (ngModelChange)="busqueda.set($event)"
+            class="search-input"
+          />
+          @if (busqueda()) {
+            <button class="clear-search-btn" (click)="busqueda.set('')" title="Limpiar búsqueda">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          }
+        </div>
+
+        <div class="category-pills">
+          @for (cat of catalogoService.categorias(); track cat) {
+            <button 
+              type="button" 
+              class="cat-pill" 
+              [class.active]="categoriaFiltro() === cat"
+              (click)="categoriaFiltro.set(cat)"
+            >
+              {{ cat }}
+            </button>
+          }
+        </div>
+      </div>
+    </header>
+
+    <!-- Grid de Productos (Modo Cliente) -->
+    <section class="products-grid-section">
+      @if (productosFiltrados().length === 0) {
+        <div class="empty-state">
+          <span class="material-symbols-outlined empty-icon">cookie</span>
+          <h3>No encontramos productos que coincidan</h3>
+          <p>Prueba buscando con otro término o selecciona otra categoría.</p>
+          <button class="btn-sweet-secondary" (click)="busqueda.set(''); categoriaFiltro.set('Todos')">
+            Ver todos los productos
+          </button>
+        </div>
+      } @else {
+        <div class="products-grid">
+          @for (prod of productosFiltrados(); track prod.id) {
+            <article class="product-card" [class.out-of-stock]="prod.stock === 0">
+              <!-- Badge Superior -->
+              @if (prod.badge) {
+                <div class="product-badge">{{ prod.badge }}</div>
+              }
+
+              <!-- Imagen del Producto -->
+              <div class="product-img-wrap">
+                <img [src]="prod.imagen" [alt]="prod.nombre" loading="lazy" />
+                @if (prod.stock === 0) {
+                  <div class="sold-out-overlay">
+                    <span>Agotado por hoy</span>
+                  </div>
+                }
+              </div>
+
+              <!-- Cuerpo de la Tarjeta -->
+              <div class="product-body">
+                <div class="product-category-row">
+                  <span class="product-category">{{ prod.categoria }}</span>
+                  <span class="product-portions">{{ prod.porciones || 'Porción individual' }}</span>
+                </div>
+
+                <h3 class="product-title">{{ prod.nombre }}</h3>
+                <p class="product-flavor">{{ prod.sabor }}</p>
+                <p class="product-desc">{{ prod.descripcion }}</p>
+
+                <!-- Stock e Inventario para el Cliente -->
+                <div class="stock-status-row">
+                  @if (prod.stock > 10) {
+                    <span class="stock-indicator green">
+                      <span class="dot"></span> Disponible: {{ prod.stock }} piezas
+                    </span>
+                  } @else if (prod.stock > 0) {
+                    <span class="stock-indicator yellow">
+                      <span class="dot"></span> ¡Últimas {{ prod.stock }} piezas disponibles!
+                    </span>
+                  } @else {
+                    <span class="stock-indicator red">
+                      <span class="dot"></span> Agotado en mostrador
+                    </span>
+                  }
+                </div>
+
+                <!-- Footer de la Tarjeta con Precio y Selección -->
+                <div class="product-footer">
+                  <div class="price-box">
+                    <span class="currency">$</span>
+                    <span class="price">{{ prod.precio }}</span>
+                    <span class="unit">MXN</span>
+                  </div>
+
+                  <!-- Selector de Cantidad para Clientes -->
+                  <div class="selection-controls">
+                    @if (obtenerCantidad(prod.id) > 0) {
+                      <div class="qty-stepper">
+                        <button 
+                          type="button" 
+                          class="qty-btn" 
+                          (click)="decrementar(prod.id)"
+                          title="Restar una pieza"
+                        >
+                          <span class="material-symbols-outlined">remove</span>
+                        </button>
+                        <span class="qty-number">{{ obtenerCantidad(prod.id) }}</span>
+                        <button 
+                          type="button" 
+                          class="qty-btn" 
+                          [disabled]="obtenerCantidad(prod.id) >= prod.stock"
+                          (click)="incrementar(prod.id)"
+                          title="Sumar una pieza"
+                        >
+                          <span class="material-symbols-outlined">add</span>
+                        </button>
+                      </div>
+                    } @else {
+                      <button 
+                        type="button" 
+                        class="btn-select-product" 
+                        [disabled]="prod.stock <= 0"
+                        (click)="seleccionarProducto(prod)"
+                      >
+                        <span class="material-symbols-outlined">add_shopping_cart</span>
+                        <span>{{ prod.stock > 0 ? 'Seleccionar' : 'Agotado' }}</span>
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  </div>
+
+  <!-- Barra Flotante de Selección (Carrito de Cliente) -->
+  @if (catalogoService.totalPiezasSeleccionadas() > 0) {
+    <aside class="floating-selection-bar">
+      <div class="floating-bar-container">
+        <div class="selection-summary-info">
+          <div class="selection-icon-wrap">
+            <span class="material-symbols-outlined">shopping_basket</span>
+            <span class="selection-count-badge">{{ catalogoService.totalPiezasSeleccionadas() }}</span>
+          </div>
+          <div class="selection-text">
+            <strong>{{ catalogoService.totalPiezasSeleccionadas() }} producto(s) seleccionados</strong>
+            <span class="selection-total-amount">Total: ${{ catalogoService.totalMontoSeleccionado() }} MXN</span>
+          </div>
+        </div>
+
+        <div class="selection-actions">
+          <button type="button" class="btn-view-selection" (click)="abrirResumen()">
+            <span>Ver mi selección</span>
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+  }
+
+  <!-- Modal Dulce de Resumen de Selección -->
+  @if (modalResumenAbierto()) {
+    <div class="modal-backdrop" (click)="cerrarResumen()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <div class="modal-title-box">
+            <span class="material-symbols-outlined icon">receipt_long</span>
+            <h3>Tu Selección de Panadería</h3>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="cerrarResumen()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </header>
+
+        <div class="modal-body">
+          <ul class="selected-items-list">
+            @for (item of productosEnSeleccion(); track item.producto.id) {
+              <li class="selected-item">
+                <img [src]="item.producto.imagen" [alt]="item.producto.nombre" class="item-thumb" />
+                <div class="item-info">
+                  <strong>{{ item.producto.nombre }}</strong>
+                  <span class="item-flavor">{{ item.producto.sabor }}</span>
+                  <span class="item-price-unit">${{ item.producto.precio }} c/u</span>
+                </div>
+                <div class="item-stepper">
+                  <button type="button" class="mini-btn" (click)="decrementar(item.producto.id)">
+                    <span class="material-symbols-outlined">remove</span>
+                  </button>
+                  <span class="item-qty">{{ item.cantidad }}</span>
+                  <button 
+                    type="button" 
+                    class="mini-btn" 
+                    [disabled]="item.cantidad >= item.producto.stock"
+                    (click)="incrementar(item.producto.id)"
+                  >
+                    <span class="material-symbols-outlined">add</span>
+                  </button>
+                </div>
+                <span class="item-subtotal">${{ item.subtotal }}</span>
+              </li>
+            }
+          </ul>
+
+          <div class="modal-total-summary">
+            <div class="summary-line">
+              <span>Subtotal:</span>
+              <strong>${{ catalogoService.totalMontoSeleccionado() }} MXN</strong>
+            </div>
+            <div class="summary-line highlight">
+              <span>Total a Pagar en Mostrador / Entrega:</span>
+              <span class="grand-total">${{ catalogoService.totalMontoSeleccionado() }} MXN</span>
+            </div>
+          </div>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn-clear-selection" (click)="vaciarSeleccion()">
+            <span class="material-symbols-outlined">delete_outline</span>
+            <span>Vaciar selección</span>
+          </button>
+          <a routerLink="/mis-pedidos" class="btn-confirm-order" (click)="cerrarResumen()">
+            <span>Continuar con mi pedido</span>
+            <span class="material-symbols-outlined">check_circle</span>
+          </a>
+        </footer>
+      </div>
+    </div>
+  }
+
+  <!-- Notificación Toast -->
+  @if (mensajeToast()) {
+    <div class="toast-notification">
+      <span class="material-symbols-outlined icon">task_alt</span>
+      <span>{{ mensajeToast() }}</span>
+    </div>
+  }
+</div>

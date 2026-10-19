@@ -1,0 +1,200 @@
+<div class="sucursales-page-wrapper">
+  <!-- Barra de Conmutación de Roles -->
+  <div class="role-selector-bar">
+    <div class="role-selector-container">
+      <div class="role-info">
+        <span class="role-tag client-tag">
+          <span class="material-symbols-outlined">person</span> Modo Cliente
+        </span>
+        <span class="role-desc">Encuentra tu sucursal más cercana en Victoria de Durango, horarios y especialidades.</span>
+      </div>
+      <div class="role-switcher">
+        <span class="switch-label">Cambiar de vista:</span>
+        <a routerLink="/sucursales/cliente" class="role-pill active">
+          <span class="material-symbols-outlined">storefront</span> Sucursales (Cliente)
+        </a>
+        <a routerLink="/sucursales/trabajador" class="role-pill">
+          <span class="material-symbols-outlined">forum</span> Chat Inter-Sucursales (Trabajador)
+        </a>
+        <a routerLink="/sucursales/admin" class="role-pill">
+          <span class="material-symbols-outlined">admin_panel_settings</span> Gestión & Stock (Admin)
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="sucursales-container">
+    <!-- Encabezado Principal -->
+    <header class="sucursales-header">
+      <div class="header-decor">
+        <span class="handwritten-tag">Tradición en Victoria de Durango</span>
+        <h1 class="page-title">Sucursales Olenka Y Ezis en Durango</h1>
+        <p class="page-subtitle">
+          Disfruta del auténtico sabor tradicional en 5 puntos estratégicos de la ciudad: desde el histórico Centro hasta Paseo Durango y Las Alamedas.
+        </p>
+      </div>
+
+      <!-- Buscador y Filtros -->
+      <div class="search-filter-bar">
+        <div class="search-input-box">
+          <span class="material-symbols-outlined search-icon">search</span>
+          <input
+            type="text"
+            placeholder="Buscar por zona, calle o nombre (ej. Centro, Paseo, Alamedas)..."
+            [ngModel]="busqueda()"
+            (ngModelChange)="busqueda.set($event)"
+            class="input-search"
+          />
+        </div>
+
+        <div class="filter-pills">
+          <button
+            type="button"
+            class="filter-pill"
+            [class.active]="filtroCaracteristica() === 'Todas'"
+            (click)="filtroCaracteristica.set('Todas')"
+          >
+            Todas ({{ sucursalesService.sucursales().length }})
+          </button>
+          <button
+            type="button"
+            class="filter-pill"
+            [class.active]="filtroCaracteristica() === 'Terraza'"
+            (click)="filtroCaracteristica.set('Terraza')"
+          >
+            ☕ Con Terraza
+          </button>
+          <button
+            type="button"
+            class="filter-pill"
+            [class.active]="filtroCaracteristica() === 'Horno'"
+            (click)="filtroCaracteristica.set('Horno')"
+          >
+            🥖 Horno Tradicional
+          </button>
+          <button
+            type="button"
+            class="filter-pill"
+            [class.active]="filtroCaracteristica() === 'Drive-thru'"
+            (click)="filtroCaracteristica.set('Drive-thru')"
+          >
+            🚗 Ventanilla Exprés
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Grid: Mapa Interactivo a la Izquierda + Lista de Sucursales a la Derecha -->
+    <div class="sucursales-main-grid">
+      <!-- Columna Izquierda: Mapa de Durango con Leaflet -->
+      <section class="map-section-wrapper" aria-label="Mapa de Sucursales en Durango">
+        <div class="map-card-container">
+          <div class="map-header-bar">
+            <div class="map-title-group">
+              <span class="material-symbols-outlined pin-header-icon">location_on</span>
+              <div>
+                <h3 class="map-title">Mapa Interactivo de Victoria de Durango</h3>
+                <span class="map-sub">Haz clic en cualquier sucursal para ver detalles y ubicación exacta</span>
+              </div>
+            </div>
+            <button type="button" class="btn-map-all" (click)="verTodasEnMapa()">
+              <span class="material-symbols-outlined">zoom_out_map</span>
+              <span>Ver Todo Durango</span>
+            </button>
+          </div>
+
+          <!-- Contenedor del Mapa Leaflet -->
+          <div #mapContainer class="durango-leaflet-map"></div>
+
+          <!-- Barra de Leyenda / Estado -->
+          <div class="map-footer-legend">
+            <div class="legend-item">
+              <span class="legend-dot open"></span>
+              <span>Abierto Hoy</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-icon">🎂</span>
+              <span>Sucursal Olenka Y Ezis</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-pin-note">📍 Coordenadas reales de Durango, Dgo.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Columna Derecha: Tarjetas de las Sucursales de Durango -->
+      <aside class="branch-cards-sidebar" aria-label="Lista de Sucursales">
+        <div class="sidebar-header">
+          <h2 class="sidebar-title">Nuestras 5 Pastelerías</h2>
+          <span class="results-badge">{{ sucursalesFiltradas().length }} disponibles</span>
+        </div>
+
+        <div class="branches-scroll-list">
+          @for (suc of sucursalesFiltradas(); track suc.id) {
+            <article
+              class="branch-item-card"
+              [class.active]="suc.id === sucursalesService.sucursalSeleccionadaId()"
+              (click)="seleccionarSucursal(suc)"
+            >
+              <div class="card-img-wrap">
+                <img [src]="suc.imagen" [alt]="suc.nombre" class="branch-thumb" />
+                <span class="status-badge" [class.open]="suc.abierto">
+                  {{ suc.abierto ? 'Abierto' : 'Cerrado' }}
+                </span>
+              </div>
+
+              <div class="card-info">
+                <div class="card-top-row">
+                  <span class="zone-tag">{{ suc.zona }}</span>
+                  <span class="phone-link">
+                    <span class="material-symbols-outlined phone-icon">call</span>
+                    {{ suc.telefono }}
+                  </span>
+                </div>
+
+                <h3 class="branch-name">{{ suc.nombre }}</h3>
+                <p class="branch-address">
+                  <span class="material-symbols-outlined loc-icon">pin_drop</span>
+                  {{ suc.direccion }}
+                </p>
+
+                <p class="branch-ref">
+                  <strong>Referencia:</strong> {{ suc.referencia }}
+                </p>
+
+                <p class="branch-schedule">
+                  <span class="material-symbols-outlined sched-icon">schedule</span>
+                  {{ suc.horario }}
+                </p>
+
+                <!-- Tags de características -->
+                <div class="feature-tags-row">
+                  @for (feat of suc.caracteristicas; track feat) {
+                    <span class="feature-tag">✦ {{ feat }}</span>
+                  }
+                </div>
+
+                <div class="card-action-bar">
+                  <button type="button" class="btn-focus-map">
+                    <span class="material-symbols-outlined">explore</span>
+                    <span>Ubicar en Mapa</span>
+                  </button>
+                  <a
+                    [href]="'https://www.google.com/maps/search/?api=1&query=' + suc.lat + ',' + suc.lng"
+                    target="_blank"
+                    class="btn-directions"
+                    (click)="$event.stopPropagation()"
+                  >
+                    <span class="material-symbols-outlined">directions</span>
+                    <span>Cómo llegar</span>
+                  </a>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>

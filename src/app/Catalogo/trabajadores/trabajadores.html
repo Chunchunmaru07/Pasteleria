@@ -1,0 +1,243 @@
+<div class="catalogo-wrapper">
+  <!-- Barra de Conmutación de Roles -->
+  <div class="role-selector-bar">
+    <div class="role-selector-container">
+      <div class="role-info">
+        <span class="role-tag worker-tag">
+          <span class="material-symbols-outlined">badge</span> Modo Trabajador
+        </span>
+        <span class="role-desc">Puedes seleccionar productos y <strong>editar la cantidad disponible (stock)</strong>.</span>
+      </div>
+      <div class="role-switcher">
+        <span class="switch-label">Cambiar de rol:</span>
+        <a routerLink="/catalogo/clientes" class="role-pill">
+          <span class="material-symbols-outlined">person</span> Clientes
+        </a>
+        <a routerLink="/catalogo/trabajadores" class="role-pill active">
+          <span class="material-symbols-outlined">badge</span> Trabajadores
+        </a>
+        <a routerLink="/catalogo/admin" class="role-pill">
+          <span class="material-symbols-outlined">admin_panel_settings</span> Administrador
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="catalogo-container">
+    <!-- Encabezado de Trabajadores -->
+    <header class="catalogo-header">
+      <div class="worker-badge-header">
+        <span class="material-symbols-outlined">inventory_2</span>
+        <span>Panel de Control de Mostrador & Horneado</span>
+      </div>
+      <h1 class="catalogo-title">Gestión de Inventario & Ventas</h1>
+      <p class="catalogo-subtitle">
+        Actualiza el stock en mostrador en tiempo real conforme salen las charolas del horno. 
+        También puedes tomar pedidos y seleccionar piezas para clientes en tienda.
+      </p>
+
+      <!-- Métricas Rápidas para el Equipo -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <span class="material-symbols-outlined icon">cake</span>
+          <div>
+            <strong>{{ metricas().totalProductos }}</strong>
+            <p>Variedades</p>
+          </div>
+        </div>
+
+        <div class="metric-card highlight">
+          <span class="material-symbols-outlined icon">layers</span>
+          <div>
+            <strong>{{ metricas().totalUnidades }}</strong>
+            <p>Piezas Totales en Stock</p>
+          </div>
+        </div>
+
+        <div class="metric-card warning" [class.active-filter]="soloStockBajo()" (click)="soloStockBajo.set(!soloStockBajo())">
+          <span class="material-symbols-outlined icon">warning</span>
+          <div>
+            <strong>{{ metricas().stockBajoCount }}</strong>
+            <p>Por Agotarse (&lt; 5)</p>
+          </div>
+          <span class="filter-tip">{{ soloStockBajo() ? 'Mostrando solo bajos' : 'Filtrar' }}</span>
+        </div>
+
+        <div class="metric-card danger">
+          <span class="material-symbols-outlined icon">do_not_disturb_on</span>
+          <div>
+            <strong>{{ metricas().agotadosCount }}</strong>
+            <p>Agotados</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtros y Búsqueda -->
+      <div class="filter-controls">
+        <div class="search-box">
+          <span class="material-symbols-outlined search-icon">search</span>
+          <input 
+            type="text" 
+            placeholder="Buscar por nombre, sabor o categoría..." 
+            [ngModel]="busqueda()"
+            (ngModelChange)="busqueda.set($event)"
+            class="search-input"
+          />
+          @if (busqueda()) {
+            <button class="clear-search-btn" (click)="busqueda.set('')" title="Limpiar">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          }
+        </div>
+
+        <div class="category-pills">
+          @for (cat of catalogoService.categorias(); track cat) {
+            <button 
+              type="button" 
+              class="cat-pill" 
+              [class.active]="categoriaFiltro() === cat"
+              (click)="categoriaFiltro.set(cat)"
+            >
+              {{ cat }}
+            </button>
+          }
+        </div>
+      </div>
+    </header>
+
+    <!-- Grid de Productos para Trabajadores con Editor de Stock -->
+    <section class="products-grid-section">
+      @if (productosFiltrados().length === 0) {
+        <div class="empty-state">
+          <span class="material-symbols-outlined empty-icon">search_off</span>
+          <h3>Sin productos coincidentes</h3>
+          <p>No se encontraron resultados con los filtros actuales.</p>
+          <button class="btn-sweet-secondary" (click)="busqueda.set(''); categoriaFiltro.set('Todos'); soloStockBajo.set(false)">
+            Ver todos los productos
+          </button>
+        </div>
+      } @else {
+        <div class="products-grid">
+          @for (prod of productosFiltrados(); track prod.id) {
+            <article class="product-card worker-card" [class.low-stock]="prod.stock > 0 && prod.stock < 5" [class.no-stock]="prod.stock === 0">
+              <div class="product-img-wrap">
+                <img [src]="prod.imagen" [alt]="prod.nombre" loading="lazy" />
+                <div class="stock-badge-floating" [class.green]="prod.stock >= 5" [class.orange]="prod.stock > 0 && prod.stock < 5" [class.red]="prod.stock === 0">
+                  {{ prod.stock === 0 ? 'AGOTADO' : (prod.stock + ' en Stock') }}
+                </div>
+              </div>
+
+              <div class="product-body">
+                <div class="product-category-row">
+                  <span class="product-category">{{ prod.categoria }}</span>
+                  <span class="product-price-badge">${{ prod.precio }} MXN</span>
+                </div>
+
+                <h3 class="product-title">{{ prod.nombre }}</h3>
+                <p class="product-flavor">{{ prod.sabor }}</p>
+
+                <!-- ==========================================================
+                     ZONA DE EDICIÓN DE STOCK (CANTIDAD DISPONIBLE)
+                     ========================================================== -->
+                <div class="stock-editor-box">
+                  <div class="stock-editor-header">
+                    <span class="stock-label">
+                      <span class="material-symbols-outlined icon">edit_note</span>
+                      <strong>Editar Cantidad Disponible</strong>
+                    </span>
+                    <span class="current-stock-val">Actual: <b>{{ prod.stock }}</b></span>
+                  </div>
+
+                  <!-- Botonera de Ajuste Rápido y Entrada Numérica -->
+                  <div class="stock-controls-row">
+                    <button 
+                      type="button" 
+                      class="btn-stock-delta" 
+                      (click)="ajustarStockRapido(prod, -5)"
+                      [disabled]="prod.stock <= 0"
+                      title="Quitar 5"
+                    >-5</button>
+                    <button 
+                      type="button" 
+                      class="btn-stock-delta" 
+                      (click)="ajustarStockRapido(prod, -1)"
+                      [disabled]="prod.stock <= 0"
+                      title="Quitar 1"
+                    >-1</button>
+
+                    <!-- Input para escribir cantidad exacta -->
+                    <div class="stock-direct-input-wrap">
+                      <input 
+                        type="number" 
+                        min="0"
+                        [value]="getValorInputStock(prod)"
+                        (input)="setValorInputStock(prod.id, $any($event.target).value)"
+                        class="stock-number-input"
+                        title="Escribe la cantidad disponible"
+                      />
+                      <button 
+                        type="button" 
+                        class="btn-save-stock" 
+                        (click)="guardarStockManual(prod)"
+                        title="Guardar este stock"
+                      >
+                        <span class="material-symbols-outlined">check</span>
+                      </button>
+                    </div>
+
+                    <button 
+                      type="button" 
+                      class="btn-stock-delta plus" 
+                      (click)="ajustarStockRapido(prod, +1)"
+                      title="Añadir 1"
+                    >+1</button>
+                    <button 
+                      type="button" 
+                      class="btn-stock-delta plus" 
+                      (click)="ajustarStockRapido(prod, +5)"
+                      title="Añadir 5"
+                    >+5</button>
+                  </div>
+                </div>
+
+                <!-- Selección de Producto para el Trabajador (Atención a Clientes) -->
+                <div class="product-footer worker-footer">
+                  <div class="worker-selection-row">
+                    <span class="selection-label">Seleccionar para cliente:</span>
+                    <div class="qty-stepper-worker">
+                      <button 
+                        type="button" 
+                        class="qty-btn" 
+                        [disabled]="getCantidadSeleccionada(prod.id) <= 0"
+                        (click)="decrementar(prod.id)"
+                      >
+                        <span class="material-symbols-outlined">remove</span>
+                      </button>
+                      <span class="qty-val">{{ getCantidadSeleccionada(prod.id) }}</span>
+                      <button 
+                        type="button" 
+                        class="qty-btn" 
+                        [disabled]="getCantidadSeleccionada(prod.id) >= prod.stock"
+                        (click)="seleccionar(prod.id)"
+                      >
+                        <span class="material-symbols-outlined">add</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  </div>
+
+  <!-- Toast -->
+  @if (mensajeToast()) {
+    <div class="toast-notification">
+      <span class="material-symbols-outlined icon">check_circle</span>
+      <span>{{ mensajeToast() }}</span>
+    </div>
+  }
+</div>

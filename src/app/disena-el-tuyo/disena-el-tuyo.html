@@ -1,0 +1,1314 @@
+<div class="cake-customizer-page">
+  <!-- Efecto de Confeti de Celebración -->
+  @if (celebrando()) {
+    <div class="confetti-container" aria-hidden="true">
+      @for (c of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]; track c) {
+        <div class="confetti-piece" [style.left.%]="c * 5" [style.animationDelay.s]="c * 0.1"></div>
+      }
+    </div>
+  }
+
+  <!-- Toast Notification -->
+  @if (toastMensaje()) {
+    <div class="toast-notification animate-slide-in">
+      <span class="material-symbols-outlined toast-icon">sparkles</span>
+      <span>{{ toastMensaje() }}</span>
+    </div>
+  }
+
+  <!-- Header Superior del Taller 3D -->
+  <header class="customizer-header">
+    <div class="header-left">
+      <div class="header-breadcrumb-row">
+        <a routerLink="/catalogo" class="back-link">
+          <span class="material-symbols-outlined">arrow_back</span>
+          <span>Catálogo</span>
+        </a>
+        <span class="bullet-separator">•</span>
+        <div class="header-badge">
+          <span class="material-symbols-outlined pulse-dot">videogame_asset</span>
+          <span>Simulador 3D en Tiempo Real</span>
+        </div>
+      </div>
+      <h1 class="header-title">Diseña Tu Pastel Artesanal</h1>
+      <p class="header-subtitle">
+        Modela tu pastel en 360° como en un videojuego: elige pisos, sabores, cobertura, glaseado drip y toppings 3D.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <!-- Alternar Sonido -->
+      <button
+        type="button"
+        class="header-btn"
+        (click)="sonidoHabilitado.set(!sonidoHabilitado())"
+        [title]="sonidoHabilitado() ? 'Silenciar efectos' : 'Activar efectos de sonido'"
+      >
+        <span class="material-symbols-outlined">
+          {{ sonidoHabilitado() ? 'volume_up' : 'volume_off' }}
+        </span>
+        <span class="btn-text">{{ sonidoHabilitado() ? 'Sonido ON' : 'Sonido OFF' }}</span>
+      </button>
+
+      <!-- Mis Diseños Guardados -->
+      <button type="button" class="header-btn" (click)="modalGuardados.set(true)">
+        <span class="material-symbols-outlined">favorite</span>
+        <span class="btn-text">Mis Diseños</span>
+        @if (pastelesGuardados().length > 0) {
+          <span class="counter-badge">{{ pastelesGuardados().length }}</span>
+        }
+      </button>
+
+      <!-- Ficha Técnica -->
+      <button type="button" class="header-btn" (click)="modalFichaTecnica.set(true)">
+        <span class="material-symbols-outlined">receipt_long</span>
+        <span class="btn-text">Ficha Técnica</span>
+      </button>
+
+      <!-- Botón Pedir / Agregar -->
+      <button type="button" class="btn-order-highlight" (click)="agregarAlCarritoPedido()">
+        <span class="material-symbols-outlined">shopping_cart_checkout</span>
+        <span>Pedir Este Pastel ({{ precioCalculado() | currency: 'MXN' : 'symbol' : '1.0-0' }})</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal: Viewport 3D a la izquierda, HUD / Consola a la derecha -->
+  <main class="customizer-workbench">
+    <!-- ================================================================= -->
+    <!-- PANEL IZQUIERDO: VIEWPORT 3D (CANVAS THREE.JS) -->
+    <!-- ================================================================= -->
+    <section class="viewport-3d-wrapper" aria-label="Visor 3D del Pastel">
+      <!-- Canvas Three.js -->
+      <div #canvasContainer class="canvas-3d-container"></div>
+
+      <!-- Barra Flotante Superior: Vistas de Cámara e Iluminación -->
+      <div class="viewport-hud-top">
+        <!-- Vistas Rápidas de Cámara de Juego -->
+        <div class="camera-preset-bar">
+          <span class="hud-label">
+            <span class="material-symbols-outlined">videocam</span> Cámara:
+          </span>
+          <button
+            type="button"
+            class="cam-btn"
+            [class.active]="!modoCorte()"
+            (click)="setCameraPreset('frontal')"
+            title="Vista Frontal Clásica"
+          >
+            Frontal
+          </button>
+          <button
+            type="button"
+            class="cam-btn"
+            (click)="setCameraPreset('isometrica')"
+            title="Vista Isométrica 45° tipo Juego"
+          >
+            3D Isométrica
+          </button>
+          <button
+            type="button"
+            class="cam-btn"
+            (click)="setCameraPreset('cenital')"
+            title="Vista Superior Cenital"
+          >
+            Superior
+          </button>
+          <button
+            type="button"
+            class="cam-btn cut-mode-btn"
+            [class.active]="modoCorte()"
+            (click)="setCameraPreset('rebanada')"
+            title="Ver interior: Bizcocho y Relleno al descubierto"
+          >
+            <span class="material-symbols-outlined">cake</span>
+            <span>Ver Interior</span>
+          </button>
+        </div>
+
+        <!-- Modo de Iluminación de Estudio -->
+        <div class="lighting-preset-bar">
+          <span class="hud-label">
+            <span class="material-symbols-outlined">lightbulb</span> Iluminación:
+          </span>
+          <button
+            type="button"
+            class="light-pill"
+            [class.active]="estudioLuz() === 'pasteleria'"
+            (click)="cambiarEstudioLuz('pasteleria')"
+            title="Estudio Pastelería Cálido"
+          >
+            ☀️ Estudio
+          </button>
+          <button
+            type="button"
+            class="light-pill"
+            [class.active]="estudioLuz() === 'neon'"
+            (click)="cambiarEstudioLuz('neon')"
+            title="Fiesta Neón Festivo"
+          >
+            🎆 Neón
+          </button>
+          <button
+            type="button"
+            class="light-pill"
+            [class.active]="estudioLuz() === 'romantico'"
+            (click)="cambiarEstudioLuz('romantico')"
+            title="Luz Romántica de Velas"
+          >
+            🕯️ Velas
+          </button>
+          <button
+            type="button"
+            class="light-pill"
+            [class.active]="estudioLuz() === 'natural'"
+            (click)="cambiarEstudioLuz('natural')"
+            title="Luz Natural de Día"
+          >
+            🌿 Día
+          </button>
+        </div>
+      </div>
+
+      <!-- Tarjeta Flotante con Resumen en Vivo -->
+      <div class="floating-spec-card">
+        <div class="spec-row">
+          <span class="spec-tag">
+            <span class="material-symbols-outlined">layers</span>
+            {{ pisosCount() }} {{ pisosCount() === 1 ? 'Piso' : 'Pisos' }}
+          </span>
+          <span class="spec-tag">
+            <span class="material-symbols-outlined">group</span>
+            {{ porcionesEstimadas() }}
+          </span>
+          <span class="spec-tag">
+            <span class="material-symbols-outlined">straighten</span>
+            ~{{ alturaEstimadaCm() }} cm alto
+          </span>
+        </div>
+        <div class="spec-price">
+          <span class="price-label">Precio Estimado:</span>
+          <span class="price-value">{{ precioCalculado() | currency: 'MXN' : 'symbol' : '1.0-0' }}</span>
+        </div>
+      </div>
+
+      <!-- Barra Flotante Inferior de Herramientas -->
+      <div class="viewport-hud-bottom">
+        <div class="hud-tools-left">
+          <button
+            type="button"
+            class="hud-tool-btn"
+            [class.active]="autoRotar()"
+            (click)="toggleAutoRotar()"
+            title="Giro automático del plato 360°"
+          >
+            <span class="material-symbols-outlined">360</span>
+            <span>{{ autoRotar() ? 'Detener Giro' : 'Girar 360°' }}</span>
+          </button>
+
+          <button
+            type="button"
+            class="hud-tool-btn"
+            (click)="setCameraPreset('frontal')"
+            title="Restablecer posición de cámara"
+          >
+            <span class="material-symbols-outlined">center_focus_strong</span>
+            <span>Centrar</span>
+          </button>
+        </div>
+
+        <div class="hud-tools-right">
+          <button
+            type="button"
+            class="hud-tool-btn capture-btn"
+            (click)="capturarFotoHD()"
+            title="Tomar fotografía HD de tu pastel"
+          >
+            <span class="material-symbols-outlined">photo_camera</span>
+            <span>Foto HD</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Pista interactiva de control -->
+      <div class="orbit-hint-pill">
+        <span class="material-symbols-outlined">touch_app</span>
+        <span>Arrastra con el mouse para rotar en 360° • Usa la rueda para hacer zoom</span>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- PANEL DERECHO: CONSOLA / HUD DE PERSONALIZACIÓN -->
+    <!-- ================================================================= -->
+    <aside class="customizer-dock" aria-label="Controles de diseño del pastel">
+      <!-- Pestañas de Navegación del HUD -->
+      <nav class="dock-tab-bar" role="tablist">
+        <button
+          type="button"
+          class="dock-tab"
+          [class.active]="activeTab() === 'pisos'"
+          (click)="activeTab.set('pisos')"
+          role="tab"
+        >
+          <span class="material-symbols-outlined">cake</span>
+          <span>Pisos & Forma</span>
+        </button>
+
+        <button
+          type="button"
+          class="dock-tab"
+          [class.active]="activeTab() === 'glaseado'"
+          (click)="activeTab.set('glaseado')"
+          role="tab"
+        >
+          <span class="material-symbols-outlined">palette</span>
+          <span>Glaseado & Drip</span>
+        </button>
+
+        <button
+          type="button"
+          class="dock-tab"
+          [class.active]="activeTab() === 'toppings'"
+          (click)="activeTab.set('toppings')"
+          role="tab"
+        >
+          <span class="material-symbols-outlined">nutrition</span>
+          <span>Toppings 3D</span>
+        </button>
+
+        <button
+          type="button"
+          class="dock-tab"
+          [class.active]="activeTab() === 'topper'"
+          (click)="activeTab.set('topper')"
+          role="tab"
+        >
+          <span class="material-symbols-outlined">workspace_premium</span>
+          <span>Toppers & Mensaje</span>
+        </button>
+
+        <button
+          type="button"
+          class="dock-tab"
+          [class.active]="activeTab() === 'inspiraciones'"
+          (click)="activeTab.set('inspiraciones')"
+          role="tab"
+        >
+          <span class="material-symbols-outlined">auto_awesome</span>
+          <span>Inspiraciones</span>
+        </button>
+
+        <button
+          type="button"
+          class="dock-tab"
+          [class.active]="activeTab() === 'resumen'"
+          (click)="activeTab.set('resumen')"
+          role="tab"
+        >
+          <span class="material-symbols-outlined">checklist</span>
+          <span>Cotización</span>
+        </button>
+      </nav>
+
+      <!-- Contenido Dinámico de la Pestaña Activa -->
+      <div class="dock-content-scroll">
+        <!-- ============================================================= -->
+        <!-- PESTAÑA 1: PISOS & FORMA -->
+        <!-- ============================================================= -->
+        @if (activeTab() === 'pisos') {
+          <div class="dock-section animate-fade-in">
+            <h2 class="section-title">
+              <span class="material-symbols-outlined">layers</span>
+              1. Número de Pisos / Niveles
+            </h2>
+            <p class="section-desc">Selecciona la altura y cantidad de pisos para tu celebración:</p>
+
+            <div class="tier-selector-grid">
+              @for (n of [1, 2, 3, 4]; track n) {
+                <button
+                  type="button"
+                  class="tier-option-card"
+                  [class.selected]="pisosCount() === n"
+                  (click)="setPisos(n)"
+                >
+                  <div class="tier-icon-preview">
+                    @for (level of [].constructor(n); track $index) {
+                      <div class="preview-tier-bar" [style.width.%]="100 - $index * 20"></div>
+                    }
+                  </div>
+                  <span class="tier-title">{{ n }} {{ n === 1 ? 'Piso' : 'Pisos' }}</span>
+                  <span class="tier-servings">
+                    {{ n === 1 ? '12-15 pzas' : n === 2 ? '25-32 pzas' : n === 3 ? '45-55 pzas' : '70-85 pzas' }}
+                  </span>
+                </button>
+              }
+            </div>
+
+            <div class="divider"></div>
+
+            <h2 class="section-title">
+              <span class="material-symbols-outlined">shapes</span>
+              2. Forma Geométrica del Pastel
+            </h2>
+            <div class="shape-selector-grid">
+              <button
+                type="button"
+                class="shape-card"
+                [class.selected]="forma() === 'cilindro'"
+                (click)="setForma('cilindro')"
+              >
+                <span class="material-symbols-outlined shape-icon">circle</span>
+                <span class="shape-name">Redondo Clásico</span>
+                <span class="shape-sub">Elegante y tradicional</span>
+              </button>
+
+              <button
+                type="button"
+                class="shape-card"
+                [class.selected]="forma() === 'cuadrado'"
+                (click)="setForma('cuadrado')"
+              >
+                <span class="material-symbols-outlined shape-icon">crop_square</span>
+                <span class="shape-name">Cuadrado Moderno</span>
+                <span class="shape-sub">Líneas contemporáneas</span>
+              </button>
+
+              <button
+                type="button"
+                class="shape-card"
+                [class.selected]="forma() === 'corazon'"
+                (click)="setForma('corazon')"
+              >
+                <span class="material-symbols-outlined shape-icon">favorite</span>
+                <span class="shape-name">Corazón Romántico</span>
+                <span class="shape-sub">Bodas & Aniversarios</span>
+              </button>
+
+              <button
+                type="button"
+                class="shape-card"
+                [class.selected]="forma() === 'hexagonal'"
+                (click)="setForma('hexagonal')"
+              >
+                <span class="material-symbols-outlined shape-icon">hexagon</span>
+                <span class="shape-name">Hexagonal Boutique</span>
+                <span class="shape-sub">Estilo geométrico</span>
+              </button>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2 class="section-title">
+              <span class="material-symbols-outlined">height</span>
+              3. Proporción de Cada Nivel
+            </h2>
+            <div class="pill-group">
+              <button
+                type="button"
+                class="pill-choice"
+                [class.active]="alturaPiso() === 'normal'"
+                (click)="alturaPiso.set('normal'); rebuildCake3D()"
+              >
+                Normal (10 cm por piso)
+              </button>
+              <button
+                type="button"
+                class="pill-choice"
+                [class.active]="alturaPiso() === 'alto'"
+                (click)="alturaPiso.set('alto'); rebuildCake3D()"
+              >
+                Doble Altura / Estilizado (14 cm por piso)
+              </button>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2 class="section-title">
+              <span class="material-symbols-outlined">bakery_dining</span>
+              4. Sabor de Bizcocho & Relleno Interior
+            </h2>
+            <div class="form-row">
+              <div class="form-field">
+                <label for="saborBizcochoSelect">Sabor de Bizcocho:</label>
+                <select
+                  id="saborBizcochoSelect"
+                  class="select-input"
+                  [ngModel]="saborBizcocho()"
+                  (ngModelChange)="saborBizcocho.set($event); rebuildCake3D()"
+                >
+                  <option value="vainilla">Vainilla Natural de Papantla</option>
+                  <option value="chocolate">Chocolate de Cacao Oaxaqueño</option>
+                  <option value="red_velvet">Red Velvet Pasión Suave</option>
+                  <option value="tres_leches">Tres Leches Tradicional con Canela</option>
+                  <option value="limon">Limón con Semillas de Amapola</option>
+                  <option value="nuez">Nuez Pecana & Especias Dulces</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="saborRellenoSelect">Relleno Artesanal:</label>
+                <select
+                  id="saborRellenoSelect"
+                  class="select-input"
+                  [ngModel]="saborRelleno()"
+                  (ngModelChange)="saborRelleno.set($event); rebuildCake3D()"
+                >
+                  <option value="cajeta">Cajeta Quemada de Celaya</option>
+                  <option value="diplomatica">Crema Diplomática de Vainilla</option>
+                  <option value="ganache">Ganache de Chocolate 70%</option>
+                  <option value="frambuesa">Coulis Artesanal de Frambuesa</option>
+                  <option value="frutos_rojos">Mousse de Frutos Rojos</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Botón para ver corte interior -->
+            <div class="slice-helper-box">
+              <button type="button" class="btn-slice-toggle" (click)="setCameraPreset('rebanada')">
+                <span class="material-symbols-outlined">knife</span>
+                <span>¡Ver corte interior del bizcocho en 3D!</span>
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- ============================================================= -->
+        <!-- PESTAÑA 2: GLASEADO, COLOR & DRIP -->
+        <!-- ============================================================= -->
+        @if (activeTab() === 'glaseado') {
+          <div class="dock-section animate-fade-in">
+            <h2 class="section-title">
+              <span class="material-symbols-outlined">brush</span>
+              1. Acabado y Textura del Glaseado
+            </h2>
+
+            <div class="frosting-types-grid">
+              <button
+                type="button"
+                class="frosting-type-card"
+                [class.selected]="tipoGlaseado() === 'fondant'"
+                (click)="setTipoGlaseado('fondant')"
+              >
+                <span class="frosting-emoji">🎂</span>
+                <span class="frosting-title">Fondant Satinado</span>
+                <span class="frosting-sub">Acabado liso impecable</span>
+              </button>
+
+              <button
+                type="button"
+                class="frosting-type-card"
+                [class.selected]="tipoGlaseado() === 'chantilly'"
+                (click)="setTipoGlaseado('chantilly')"
+              >
+                <span class="frosting-emoji">🧁</span>
+                <span class="frosting-title">Crema Chantilly</span>
+                <span class="frosting-sub">Espatulado rústico</span>
+              </button>
+
+              <button
+                type="button"
+                class="frosting-type-card"
+                [class.selected]="tipoGlaseado() === 'espejo'"
+                (click)="setTipoGlaseado('espejo')"
+              >
+                <span class="frosting-emoji">✨</span>
+                <span class="frosting-title">Cobertura Espejo</span>
+                <span class="frosting-sub">Ultra brillante Mirror Glaze</span>
+              </button>
+
+              <button
+                type="button"
+                class="frosting-type-card"
+                [class.selected]="tipoGlaseado() === 'naked'"
+                (click)="setTipoGlaseado('naked')"
+              >
+                <span class="frosting-emoji">🌾</span>
+                <span class="frosting-title">Naked Cake</span>
+                <span class="frosting-sub">Semi-desnudo bohemio</span>
+              </button>
+
+              <button
+                type="button"
+                class="frosting-type-card"
+                [class.selected]="tipoGlaseado() === 'terciopelo'"
+                (click)="setTipoGlaseado('terciopelo')"
+              >
+                <span class="frosting-emoji">👑</span>
+                <span class="frosting-title">Terciopelo Matte</span>
+                <span class="frosting-sub">Efecto spray aterciopelado</span>
+              </button>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2 class="section-title">
+              <span class="material-symbols-outlined">palette</span>
+              2. Paleta de Colores de Repostería
+            </h2>
+
+            <div class="color-palette-grid">
+              @for (c of paletaColores; track c.hex) {
+                <button
+                  type="button"
+                  class="color-chip-btn"
+                  [class.selected]="colorGlaseado().toLowerCase() === c.hex.toLowerCase()"
+                  [style.backgroundColor]="c.hex"
+                  (click)="setColor(c.hex)"
+                  [title]="c.nombre"
+                >
+                  @if (colorGlaseado().toLowerCase() === c.hex.toLowerCase()) {
+                    <span class="material-symbols-outlined checkmark-icon">check</span>
+                  }
+                </button>
+              }
+            </div>
+
+            <!-- Selector personalizado de Color Hex -->
+            <div class="custom-color-picker-row">
+              <label for="colorPickerInput">O elige cualquier color a medida:</label>
+              <div class="picker-input-wrap">
+                <input
+                  id="colorPickerInput"
+                  type="color"
+                  [ngModel]="colorGlaseado()"
+                  (ngModelChange)="setColor($event)"
+                  class="native-color-picker"
+                />
+                <span class="color-hex-tag">{{ colorGlaseado() }}</span>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2 class="section-title">
+              <span class="material-symbols-outlined">water_drop</span>
+              3. Efecto Drip (Goteo Artesanal 3D)
+            </h2>
+            <p class="section-desc">Gotas deliciosas que escurren del borde superior en relieve 3D:</p>
+
+            <div class="drip-selector-grid">
+              <button
+                type="button"
+                class="drip-card"
+                [class.selected]="dripSabor() === 'ninguno'"
+                (click)="setDrip('ninguno')"
+              >
+                <span class="drip-swatch none">✕</span>
+                <span>Sin Drip</span>
+              </button>
+
+              <button
+                type="button"
+                class="drip-card"
+                [class.selected]="dripSabor() === 'chocolate'"
+                (click)="setDrip('chocolate')"
+              >
+                <span class="drip-swatch choco"></span>
+                <span>Chocolate Oscuro</span>
+              </button>
+
+              <button
+                type="button"
+                class="drip-card"
+                [class.selected]="dripSabor() === 'cajeta'"
+                (click)="setDrip('cajeta')"
+              >
+                <span class="drip-swatch cajeta"></span>
+                <span>Cajeta de Celaya</span>
+              </button>
+
+              <button
+                type="button"
+                class="drip-card"
+                [class.selected]="dripSabor() === 'fresa'"
+                (click)="setDrip('fresa')"
+              >
+                <span class="drip-swatch fresa"></span>
+                <span>Fresa Rubí</span>
+              </button>
+
+              <button
+                type="button"
+                class="drip-card"
+                [class.selected]="dripSabor() === 'blanco'"
+                (click)="setDrip('blanco')"
+              >
+                <span class="drip-swatch blanco"></span>
+                <span>Chocolate Blanco</span>
+              </button>
+
+              <button
+                type="button"
+                class="drip-card"
+                [class.selected]="dripSabor() === 'oro'"
+                (click)="setDrip('oro')"
+              >
+                <span class="drip-swatch oro"></span>
+                <span>Oro Metálico ✨</span>
+              </button>
+            </div>
+
+            <div class="divider"></div>
+
+            <h2 class="section-title">
+              <span class="material-symbols-outlined">interests</span>
+              4. Cenefas y Bordes en la Base
+            </h2>
+            <div class="pill-group">
+              <button
+                type="button"
+                class="pill-choice"
+                [class.active]="bordeBase() === 'ninguno'"
+                (click)="setBordeBase('ninguno')"
+              >
+                Sin Borde
+              </button>
+              <button
+                type="button"
+                class="pill-choice"
+                [class.active]="bordeBase() === 'rosetas'"
+                (click)="setBordeBase('rosetas')"
+              >
+                Rosetas de Crema
+              </button>
+              <button
+                type="button"
+                class="pill-choice"
+                [class.active]="bordeBase() === 'perlas'"
+                (click)="setBordeBase('perlas')"
+              >
+                Perlas de Azúcar 3D
+              </button>
+              <button
+                type="button"
+                class="pill-choice"
+                [class.active]="bordeBase() === 'cinta_dorada'"
+                (click)="setBordeBase('cinta_dorada')"
+              >
+                Cinta Dorada Satinada
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- ============================================================= -->
+        <!-- PESTAÑA 3: TOPPINGS & DECORACIONES 3D -->
+        <!-- ============================================================= -->
+        @if (activeTab() === 'toppings') {
+          <div class="dock-section animate-fade-in">
+            <h2 class="section-title">
+              <span class="material-symbols-outlined">nutrition</span>
+              Toppings y Accesorios 3D Interactivos
+            </h2>
+            <p class="section-desc">
+              Agrega frutas frescas glaseadas, dulces tradicionales mexicanos, flores y confeti en 3D:
+            </p>
+
+            <div class="toppings-interactive-list">
+              <!-- Fresas -->
+              <div class="topping-toggle-card" [class.enabled]="toppingFresas()">
+                <div class="topping-info">
+                  <span class="topping-emoji">🍓</span>
+                  <div class="topping-texts">
+                    <span class="topping-title">Fresas Silvestres Glaseadas</span>
+                    <span class="topping-sub">Fresas rojas con cáliz verde y brillo almibarado</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="btn-toggle"
+                  [class.active]="toppingFresas()"
+                  (click)="toggleTopping('fresas')"
+                >
+                  {{ toppingFresas() ? 'Activo' : 'Agregar' }}
+                </button>
+              </div>
+
+              <!-- Cerezas -->
+              <div class="topping-toggle-card" [class.enabled]="toppingCerezas()">
+                <div class="topping-info">
+                  <span class="topping-emoji">🍒</span>
+                  <div class="topping-texts">
+                    <span class="topping-title">Cerezas Brillantes con Tallo</span>
+                    <span class="topping-sub">Cerezas carmesí naturales</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="btn-toggle"
+                  [class.active]="toppingCerezas()"
+                  (click)="toggleTopping('cerezas')"
+                >
+                  {{ toppingCerezas() ? 'Activo' : 'Agregar' }}
+                </button>
+              </div>
+
+              <!-- Mini Conchas Mexicanas -->
+              <div class="topping-toggle-card special-mexican" [class.enabled]="toppingMiniConchas()">
+                <div class="topping-info">
+                  <span class="topping-emoji">🥐</span>
+                  <div class="topping-texts">
+                    <span class="topping-title">Mini Conchas Mexicanas 3D</span>
+                    <span class="topping-sub">Pan tradicional en miniatura de chocolate y vainilla</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="btn-toggle"
+                  [class.active]="toppingMiniConchas()"
+                  (click)="toggleTopping('miniConchas')"
+                >
+                  {{ toppingMiniConchas() ? 'Activo' : 'Agregar' }}
+                </button>
+              </div>
+
+              <!-- Macarons Franceses -->
+              <div class="topping-toggle-card" [class.enabled]="toppingMacarons()">
+                <div class="topping-info">
+                  <span class="topping-emoji">🍥</span>
+                  <div class="topping-texts">
+                    <span class="topping-title">Macarons Artesanales Finitos</span>
+                    <span class="topping-sub">Bocados de almendra en tonos pastel</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="btn-toggle"
+                  [class.active]="toppingMacarons()"
+                  (click)="toggleTopping('macarons')"
+                >
+                  {{ toppingMacarons() ? 'Activo' : 'Agregar' }}
+                </button>
+              </div>
+
+              <!-- Rosas de Azúcar 3D -->
+              <div class="topping-toggle-card" [class.enabled]="toppingRosas()">
+                <div class="topping-info">
+                  <span class="topping-emoji">🌹</span>
+                  <div class="topping-texts">
+                    <span class="topping-title">Rosas de Azúcar Modeladas</span>
+                    <span class="topping-sub">Flores comestibles hechas pétalo a pétalo</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="btn-toggle"
+                  [class.active]="toppingRosas()"
+                  (click)="toggleTopping('rosas')"
+                >
+                  {{ toppingRosas() ? 'Activo' : 'Agregar' }}
+                </button>
+              </div>
+
+              @if (toppingRosas()) {
+                <div class="sub-option-box animate-fade-in">
+                  <label>Color de las Rosas:</label>
+                  <div class="pill-group mini">
+                    <button
+                      type="button"
+                      class="pill-choice mini"
+                      [class.active]="colorRosas() === 'rosa'"
+                      (click)="colorRosas.set('rosa'); rebuildCake3D()"
+                    >
+                      Rosa Mexicano
+                    </button>
+                    <button
+                      type="button"
+                      class="pill-choice mini"
+                      [class.active]="colorRosas() === 'rojo'"
+                      (click)="colorRosas.set('rojo'); rebuildCake3D()"
+                    >
+                      Rojo Carmín
+                    </button>
+                    <button
+                      type="button"
+                      class="pill-choice mini"
+                      [class.active]="colorRosas() === 'cempasuchil'"
+                      (click)="colorRosas.set('cempasuchil'); rebuildCake3D()"
+                    >
+                      Cempasúchil
+                    </button>
+                    <button
+                      type="button"
+                      class="pill-choice mini"
+                      [class.active]="colorRosas() === 'blanco'"
+                      (click)="colorRosas.set('blanco'); rebuildCake3D()"
+                    >
+                      Blanco Puro
+                    </button>
+                  </div>
+                </div>
+              }
+
+              <!-- Sprinkles / Chispas -->
+              <div class="topping-toggle-card" [class.enabled]="toppingSprinkles()">
+                <div class="topping-info">
+                  <span class="topping-emoji">✨</span>
+                  <div class="topping-texts">
+                    <span class="topping-title">Lluvia de Sprinkles Mágicos</span>
+                    <span class="topping-sub">Chispas multicolores esparcidas en la superficie</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="btn-toggle"
+                  [class.active]="toppingSprinkles()"
+                  (click)="toggleTopping('sprinkles')"
+                >
+                  {{ toppingSprinkles() ? 'Activo' : 'Agregar' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- ============================================================= -->
+        <!-- PESTAÑA 4: TOPPERS & PLACA PERSONALIZADA -->
+        <!-- ============================================================= -->
+        @if (activeTab() === 'topper') {
+          <div class="dock-section animate-fade-in">
+            <h2 class="section-title">
+              <span class="material-symbols-outlined">workspace_premium</span>
+              1. Topper Superior en 3D
+            </h2>
+            <p class="section-desc">Corona tu pastel con un elemento distintivo en 3D:</p>
+
+            <div class="topper-options-grid">
+              <button
+                type="button"
+                class="topper-card"
+                [class.selected]="tipoTopper() === 'ninguno'"
+                (click)="setTopper('ninguno')"
+              >
+                <span class="topper-preview-icon">✕</span>
+                <span class="topper-name">Sin Topper</span>
+              </button>
+
+              <button
+                type="button"
+                class="topper-card"
+                [class.selected]="tipoTopper() === 'feliz_cumple'"
+                (click)="setTopper('feliz_cumple')"
+              >
+                <span class="topper-preview-icon">🎉</span>
+                <span class="topper-name">¡Feliz Cumpleaños!</span>
+              </button>
+
+              <button
+                type="button"
+                class="topper-card"
+                [class.selected]="tipoTopper() === 'velas'"
+                (click)="setTopper('velas')"
+              >
+                <span class="topper-preview-icon">🕯️</span>
+                <span class="topper-name">Velas Encendidas (Flama Viva)</span>
+              </button>
+
+              <button
+                type="button"
+                class="topper-card"
+                [class.selected]="tipoTopper() === 'corona'"
+                (click)="setTopper('corona')"
+              >
+                <span class="topper-preview-icon">👑</span>
+                <span class="topper-name">Corona Real Dorada</span>
+              </button>
+
+              <button
+                type="button"
+                class="topper-card"
+                [class.selected]="tipoTopper() === 'boda'"
+                (click)="setTopper('boda')"
+              >
+                <span class="topper-preview-icon">💍</span>
+                <span class="topper-name">Nuestra Boda</span>
+              </button>
+
+              <button
+                type="button"
+                class="topper-card"
+                [class.selected]="tipoTopper() === 'xv'"
+                (click)="setTopper('xv')"
+              >
+                <span class="topper-preview-icon">✨</span>
+                <span class="topper-name">Mis XV Años</span>
+              </button>
+
+              <button
+                type="button"
+                class="topper-card"
+                [class.selected]="tipoTopper() === 'numero'"
+                (click)="setTopper('numero')"
+              >
+                <span class="topper-preview-icon">🔢</span>
+                <span class="topper-name">Número de Edad</span>
+              </button>
+            </div>
+
+            @if (tipoTopper() === 'numero') {
+              <div class="sub-option-box animate-fade-in">
+                <label for="numeroEdadInput">Edad a festejar:</label>
+                <input
+                  id="numeroEdadInput"
+                  type="number"
+                  min="1"
+                  max="120"
+                  class="text-input number-input"
+                  [ngModel]="numeroEdad()"
+                  (ngModelChange)="numeroEdad.set($event); rebuildCake3D()"
+                />
+              </div>
+            }
+
+            <div class="divider"></div>
+
+            <h2 class="section-title">
+              <span class="material-symbols-outlined">edit_note</span>
+              2. Placa de Chocolate Personalizada con Tu Mensaje
+            </h2>
+            <div class="plaque-customizer-box">
+              <label class="checkbox-container">
+                <input
+                  type="checkbox"
+                  [checked]="tienePlaca()"
+                  (change)="tienePlaca.set(!tienePlaca()); rebuildCake3D()"
+                />
+                <span class="checkmark"></span>
+                <span class="checkbox-label">Incluir placa de chocolate en la base del pastel</span>
+              </label>
+
+              @if (tienePlaca()) {
+                <div class="plaque-inputs animate-fade-in">
+                  <div class="form-field">
+                    <label for="textoPlacaInput">Mensaje grabado (máx. 32 caracteres):</label>
+                    <input
+                      id="textoPlacaInput"
+                      type="text"
+                      maxlength="32"
+                      placeholder="Ej: ¡Felicidades Mariana!"
+                      class="text-input"
+                      [ngModel]="textoPlaca()"
+                      (ngModelChange)="textoPlaca.set($event); rebuildCake3D()"
+                    />
+                  </div>
+
+                  <div class="form-field">
+                    <label>Tipo de Chocolate para la placa:</label>
+                    <div class="pill-group mini">
+                      <button
+                        type="button"
+                        class="pill-choice mini"
+                        [class.active]="colorPlaca() === 'chocolate'"
+                        (click)="colorPlaca.set('chocolate'); rebuildCake3D()"
+                      >
+                        Chocolate Oscuro con letras doradas
+                      </button>
+                      <button
+                        type="button"
+                        class="pill-choice mini"
+                        [class.active]="colorPlaca() === 'blanco'"
+                        (click)="colorPlaca.set('blanco'); rebuildCake3D()"
+                      >
+                        Chocolate Blanco con letras rosas
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- ============================================================= -->
+        <!-- PESTAÑA 5: INSPIRACIONES / PRESETS -->
+        <!-- ============================================================= -->
+        @if (activeTab() === 'inspiraciones') {
+          <div class="dock-section animate-fade-in">
+            <h2 class="section-title">
+              <span class="material-symbols-outlined">auto_awesome</span>
+              Inspiraciones del Maestro Pastelero (1 Clic)
+            </h2>
+            <p class="section-desc">Carga combinaciones de ensueño listas para disfrutar o modificar:</p>
+
+            <div class="presets-gallery-grid">
+              @for (preset of presets; track preset.id) {
+                <div class="preset-card">
+                  <div class="preset-header">
+                    <span class="preset-badge">{{ preset.pisos }} Pisos</span>
+                    <h3 class="preset-name">{{ preset.nombre }}</h3>
+                  </div>
+                  <p class="preset-desc">{{ preset.descripcion }}</p>
+                  <div class="preset-color-bar" [style.backgroundColor]="preset.color"></div>
+                  <button type="button" class="btn-load-preset" (click)="aplicarPreset(preset)">
+                    <span class="material-symbols-outlined">magic_button</span>
+                    <span>Cargar en 3D</span>
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- ============================================================= -->
+        <!-- PESTAÑA 6: COTIZACIÓN & RESUMEN -->
+        <!-- ============================================================= -->
+        @if (activeTab() === 'resumen') {
+          <div class="dock-section animate-fade-in">
+            <h2 class="section-title">
+              <span class="material-symbols-outlined">receipt</span>
+              Resumen de Tu Diseño & Cotización
+            </h2>
+
+            <div class="quote-summary-card">
+              <div class="quote-header">
+                <span class="quote-title">Pastel {{ pisosCount() }} Pisos ({{ forma() }})</span>
+                <span class="quote-servings">{{ porcionesEstimadas() }}</span>
+              </div>
+
+              <div class="quote-breakdown">
+                <div class="breakdown-item">
+                  <span>Base por {{ pisosCount() }} pisos (Bizcocho de {{ saborBizcocho() }})</span>
+                  <span class="item-cost">Incluido</span>
+                </div>
+                <div class="breakdown-item">
+                  <span>Relleno artesanal: {{ saborRelleno() }}</span>
+                  <span class="item-cost">Incluido</span>
+                </div>
+                <div class="breakdown-item">
+                  <span>Glaseado: {{ tipoGlaseado() }} ({{ colorGlaseado() }})</span>
+                  <span class="item-cost">
+                    {{ tipoGlaseado() === 'espejo' || tipoGlaseado() === 'terciopelo' ? '+$110' : 'Incluido' }}
+                  </span>
+                </div>
+                @if (dripSabor() !== 'ninguno') {
+                  <div class="breakdown-item">
+                    <span>Drip artesanal de {{ dripSabor() }}</span>
+                    <span class="item-cost">{{ dripSabor() === 'oro' ? '+$95' : '+$65' }}</span>
+                  </div>
+                }
+                @if (bordeBase() !== 'ninguno') {
+                  <div class="breakdown-item">
+                    <span>Cenefa de base: {{ bordeBase() }}</span>
+                    <span class="item-cost">+$50</span>
+                  </div>
+                }
+                @if (toppingFresas() || toppingCerezas() || toppingMacarons() || toppingMiniConchas() || toppingRosas() || toppingSprinkles()) {
+                  <div class="breakdown-item">
+                    <span>Toppings 3D seleccionados</span>
+                    <span class="item-cost">Variados</span>
+                  </div>
+                }
+                @if (tipoTopper() !== 'ninguno') {
+                  <div class="breakdown-item">
+                    <span>Topper 3D: {{ tipoTopper() }}</span>
+                    <span class="item-cost">Especial</span>
+                  </div>
+                }
+                @if (tienePlaca()) {
+                  <div class="breakdown-item">
+                    <span>Placa personalizada ("{{ textoPlaca() }}")</span>
+                    <span class="item-cost">+$45</span>
+                  </div>
+                }
+              </div>
+
+              <div class="quote-total-row">
+                <span class="total-label">Total Estimado:</span>
+                <span class="total-number">{{ precioCalculado() | currency: 'MXN' : 'symbol' : '1.0-0' }}</span>
+              </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="summary-actions-grid">
+              <button type="button" class="btn-action-primary" (click)="agregarAlCarritoPedido()">
+                <span class="material-symbols-outlined">shopping_cart_checkout</span>
+                <span>¡Agregar a Mis Pedidos!</span>
+              </button>
+
+              <button type="button" class="btn-action-secondary" (click)="guardarDisenoActual()">
+                <span class="material-symbols-outlined">bookmark_add</span>
+                <span>Guardar en Mis Diseños</span>
+              </button>
+
+              <button type="button" class="btn-action-outline" (click)="capturarFotoHD()">
+                <span class="material-symbols-outlined">photo_camera</span>
+                <span>Tomar Foto 3D</span>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </aside>
+  </main>
+
+  <!-- ================================================================= -->
+  <!-- MODAL: FICHA TÉCNICA PARA EL PASTELERO -->
+  <!-- ================================================================= -->
+  @if (modalFichaTecnica()) {
+    <div class="modal-backdrop" (click)="modalFichaTecnica.set(false)">
+      <div class="modal-card ficha-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="material-symbols-outlined modal-icon">receipt_long</span>
+            <h2>Ficha Técnica de Producción Artesanal</h2>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="modalFichaTecnica.set(false)">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <p class="ficha-intro">
+            Esta hoja técnica contiene las especificaciones exactas para los maestros reposteros de <strong>Olenka Y Ezis</strong>:
+          </p>
+
+          <table class="ficha-table">
+            <tbody>
+              <tr>
+                <td><strong>Número de Pisos:</strong></td>
+                <td>{{ pisosCount() }} niveles ({{ forma() }})</td>
+              </tr>
+              <tr>
+                <td><strong>Porciones Recomendadas:</strong></td>
+                <td>{{ porcionesEstimadas() }}</td>
+              </tr>
+              <tr>
+                <td><strong>Altura Total Aprox:</strong></td>
+                <td>{{ alturaEstimadaCm() }} cm</td>
+              </tr>
+              <tr>
+                <td><strong>Sabor Bizcocho:</strong></td>
+                <td>{{ saborBizcocho() }}</td>
+              </tr>
+              <tr>
+                <td><strong>Relleno:</strong></td>
+                <td>{{ saborRelleno() }}</td>
+              </tr>
+              <tr>
+                <td><strong>Tipo de Cobertura:</strong></td>
+                <td>{{ tipoGlaseado() }} (Color: {{ colorGlaseado() }})</td>
+              </tr>
+              <tr>
+                <td><strong>Drip / Gotas:</strong></td>
+                <td>{{ dripSabor() }}</td>
+              </tr>
+              <tr>
+                <td><strong>Borde de Base:</strong></td>
+                <td>{{ bordeBase() }}</td>
+              </tr>
+              <tr>
+                <td><strong>Topper Superior:</strong></td>
+                <td>{{ tipoTopper() }}</td>
+              </tr>
+              @if (tienePlaca()) {
+                <tr>
+                  <td><strong>Placa de Chocolate:</strong></td>
+                  <td>"{{ textoPlaca() }}" ({{ colorPlaca() }})</td>
+                </tr>
+              }
+              <tr>
+                <td><strong>Precio Cotizado:</strong></td>
+                <td><strong>{{ precioCalculado() | currency: 'MXN' : 'symbol' : '1.0-0' }}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-primary" (click)="modalFichaTecnica.set(false)">
+            Cerrar Ficha
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ================================================================= -->
+  <!-- MODAL: MIS DISEÑOS GUARDADOS -->
+  <!-- ================================================================= -->
+  @if (modalGuardados()) {
+    <div class="modal-backdrop" (click)="modalGuardados.set(false)">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="material-symbols-outlined modal-icon">favorite</span>
+            <h2>Mis Creaciones Guardadas</h2>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="modalGuardados.set(false)">✕</button>
+        </div>
+
+        <div class="modal-body">
+          @if (pastelesGuardados().length === 0) {
+            <div class="empty-state">
+              <span class="material-symbols-outlined empty-icon">cake</span>
+              <p>Aún no has guardado diseños de pasteles.</p>
+              <span class="empty-sub">Diseña tu pastel y haz clic en "Guardar en Mis Diseños".</span>
+            </div>
+          } @else {
+            <div class="saved-cakes-grid">
+              @for (pastel of pastelesGuardados(); track pastel.id) {
+                <div class="saved-cake-card" (click)="cargarDiseno(pastel)">
+                  <div class="saved-cake-header">
+                    <span class="saved-color-dot" [style.backgroundColor]="pastel.colorHex"></span>
+                    <span class="saved-name">{{ pastel.nombre }}</span>
+                    <button
+                      type="button"
+                      class="btn-delete-saved"
+                      (click)="borrarDiseno(pastel.id, $event)"
+                      title="Eliminar de mi lista"
+                    >
+                      <span class="material-symbols-outlined">delete</span>
+                    </button>
+                  </div>
+                  <p class="saved-details">{{ pastel.detalles }}</p>
+                  <div class="saved-footer">
+                    <span class="saved-price">{{ pastel.precio | currency: 'MXN' : 'symbol' : '1.0-0' }}</span>
+                    <span class="saved-date">{{ pastel.fecha }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-primary" (click)="modalGuardados.set(false)">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ================================================================= -->
+  <!-- MODAL: FOTO 3D CAPTURADA -->
+  <!-- ================================================================= -->
+  @if (modalFotoCapturada()) {
+    <div class="modal-backdrop" (click)="modalFotoCapturada.set(null)">
+      <div class="modal-card photo-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="material-symbols-outlined modal-icon">photo_camera</span>
+            <h2>Tu Pastel 3D Capturado en HD</h2>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="modalFotoCapturada.set(null)">✕</button>
+        </div>
+
+        <div class="modal-body photo-body">
+          <div class="photo-frame">
+            <img [src]="modalFotoCapturada()!" alt="Captura 3D del pastel" class="captured-cake-img" />
+            <div class="photo-watermark">Olenka Y Ezis • Tradición en lo Dulce</div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-action-primary" (click)="descargarFoto()">
+            <span class="material-symbols-outlined">download</span>
+            <span>Descargar Imagen PNG</span>
+          </button>
+          <button type="button" class="btn-modal-secondary" (click)="modalFotoCapturada.set(null)">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

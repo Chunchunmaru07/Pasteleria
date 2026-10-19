@@ -1,0 +1,253 @@
+<div class="facturacion-wrapper">
+  <!-- Barra de Conmutación de Roles -->
+  <div class="role-selector-bar">
+    <div class="role-selector-container">
+      <div class="role-info">
+        <span class="role-tag worker-tag">
+          <span class="material-symbols-outlined">badge</span> Modo Trabajador
+        </span>
+        <span class="role-desc">Consulta tus ventas divididas por <strong>Día, Semana y Mes</strong> y asiste a clientes en su facturación.</span>
+      </div>
+      <div class="role-switcher">
+        <span class="switch-label">Cambiar de vista:</span>
+        <a routerLink="/facturacion/cliente" class="role-pill">
+          <span class="material-symbols-outlined">receipt_long</span> Facturar Compra
+        </a>
+        <a routerLink="/facturacion/trabajador" class="role-pill active">
+          <span class="material-symbols-outlined">badge</span> Mis Ventas (Trabajador)
+        </a>
+        <a routerLink="/facturacion/admin" class="role-pill">
+          <span class="material-symbols-outlined">query_stats</span> Ventas Totales (Admin)
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="facturacion-container">
+    <!-- Encabezado del Trabajador -->
+    <header class="facturacion-header">
+      <div class="worker-badge-header">
+        <span class="material-symbols-outlined">point_of_sale</span>
+        <span>{{ facturacionService.trabajadorActualNombre() }}</span>
+      </div>
+      <h1 class="facturacion-title">Reporte de Ventas & Facturación de Mostrador</h1>
+      <p class="facturacion-subtitle">
+        Visualiza tus ingresos generados en el turno, clasificados por día, semana y mes, o asiste a los clientes en la emisión de sus facturas fiscales en caja.
+      </p>
+
+      <!-- ======================================================================
+           3 TARJETAS KPI DE VENTAS: DÍA, SEMANA Y MES (REQUERIMIENTO PRINCIPAL)
+           ====================================================================== -->
+      <div class="kpi-sales-grid">
+        <!-- 1. VENTAS DEL DÍA -->
+        <div class="kpi-sales-card day-card" [class.active-card]="filtroPeriodo() === 'dia'" (click)="cambiarPeriodo('dia')">
+          <div class="kpi-card-header">
+            <span class="material-symbols-outlined icon">today</span>
+            <span class="period-tag">Hoy (Día)</span>
+          </div>
+          <div class="kpi-amount">${{ facturacionService.totalTrabajadorDia() }} <span class="currency">MXN</span></div>
+          <div class="kpi-footer">
+            <span>{{ facturacionService.ventasTrabajadorDia().length }} tickets cobrados hoy</span>
+            <span class="click-hint">Ver tickets ➜</span>
+          </div>
+        </div>
+
+        <!-- 2. VENTAS DE LA SEMANA -->
+        <div class="kpi-sales-card week-card" [class.active-card]="filtroPeriodo() === 'semana'" (click)="cambiarPeriodo('semana')">
+          <div class="kpi-card-header">
+            <span class="material-symbols-outlined icon">date_range</span>
+            <span class="period-tag">Esta Semana</span>
+          </div>
+          <div class="kpi-amount">${{ facturacionService.totalTrabajadorSemana() }} <span class="currency">MXN</span></div>
+          <div class="kpi-footer">
+            <span>{{ facturacionService.ventasTrabajadorSemana().length }} tickets esta semana</span>
+            <span class="click-hint">Ver tickets ➜</span>
+          </div>
+        </div>
+
+        <!-- 3. VENTAS DEL MES -->
+        <div class="kpi-sales-card month-card" [class.active-card]="filtroPeriodo() === 'mes'" (click)="cambiarPeriodo('mes')">
+          <div class="kpi-card-header">
+            <span class="material-symbols-outlined icon">calendar_month</span>
+            <span class="period-tag">Este Mes (Octubre)</span>
+          </div>
+          <div class="kpi-amount">${{ facturacionService.totalTrabajadorMes() }} <span class="currency">MXN</span></div>
+          <div class="kpi-footer">
+            <span>{{ facturacionService.ventasTrabajadorMes().length }} tickets en el mes</span>
+            <span class="click-hint">Ver tickets ➜</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selector de Pestañas: Mis Ventas vs Facturar a Clientes -->
+      <div class="tabs-switcher">
+        <button 
+          type="button" 
+          class="tab-btn" 
+          [class.active]="pestanaActiva() === 'ventas'"
+          (click)="pestanaActiva.set('ventas')"
+        >
+          <span class="material-symbols-outlined">receipt</span>
+          <span>Historial de Tickets Cobrados (Día / Semana / Mes)</span>
+        </button>
+
+        <button 
+          type="button" 
+          class="tab-btn" 
+          [class.active]="pestanaActiva() === 'facturar'"
+          (click)="pestanaActiva.set('facturar')"
+        >
+          <span class="material-symbols-outlined">receipt_long</span>
+          <span>Módulo de Facturación para Clientes en Tienda</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ======================================================================
+         PESTAÑA 1: MIS VENTAS & TICKETS DEL TRABAJADOR
+         ====================================================================== -->
+    @if (pestanaActiva() === 'ventas') {
+      <section class="worker-sales-section">
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-title-box">
+              <h3>Tickets Cobrados por {{ facturacionService.trabajadorActualNombre() }}</h3>
+              <p>Filtrando periodo: <strong>{{ filtroPeriodo() | uppercase }}</strong></p>
+            </div>
+
+            <!-- Botones Rápidos de Prueba para Cobrar en Mostrador -->
+            <div class="quick-sale-bar">
+              <span class="quick-sale-label">Cobro rápido de prueba:</span>
+              <button type="button" class="btn-quick-sale" (click)="registrarVentaRapida('Pastel 3 Leches', 420)">
+                + Pastel ($420)
+              </button>
+              <button type="button" class="btn-quick-sale" (click)="registrarVentaRapida('Charola 6 Conchas', 132)">
+                + Conchas ($132)
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="sales-table">
+              <thead>
+                <tr>
+                  <th>Folio</th>
+                  <th>Fecha y Hora</th>
+                  <th>Productos / Conceptos</th>
+                  <th>Método de Pago</th>
+                  <th>Total Cobrado</th>
+                  <th>Estado Factura</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (t of ticketsFiltrados; track t.folio) {
+                  <tr>
+                    <td><strong>{{ t.folio }}</strong></td>
+                    <td>{{ t.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+                    <td>
+                      <div class="items-summary">
+                        @for (it of t.items; track it.nombre) {
+                          <span>{{ it.cantidad }}x {{ it.nombre }}</span>
+                        }
+                      </div>
+                    </td>
+                    <td><span class="payment-badge">{{ t.metodoPago }}</span></td>
+                    <td><strong class="total-cell">${{ t.total }} MXN</strong></td>
+                    <td>
+                      @if (t.facturado) {
+                        <span class="badge-status invoiced">
+                          <span class="material-symbols-outlined">check_circle</span> Facturado
+                        </span>
+                      } @else {
+                        <span class="badge-status pending">
+                          <span class="material-symbols-outlined">schedule</span> Sin facturar
+                        </span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- ======================================================================
+         PESTAÑA 2: MÓDULO DE FACTURACIÓN PARA CLIENTES EN MOSTRADOR
+         ====================================================================== -->
+    @if (pestanaActiva() === 'facturar') {
+      <section class="invoicing-module-section">
+        <div class="invoicing-box-card">
+          <div class="module-header">
+            <span class="material-symbols-outlined icon">support_agent</span>
+            <div>
+              <h3>Asistente de Facturación en Mostrador</h3>
+              <p>Genera la factura de un cliente que esté pagando en el mostrador o solicitando factura para su empresa.</p>
+            </div>
+          </div>
+
+          <div class="assistant-grid">
+            <div class="form-group">
+              <label>Folio del Ticket a Facturar:</label>
+              <div class="input-with-button">
+                <input 
+                  type="text" 
+                  [ngModel]="folioABuscar()" 
+                  (ngModelChange)="folioABuscar.set($event)"
+                  class="form-input text-uppercase" 
+                />
+                <button type="button" class="btn-search-folio" (click)="buscarTicketMostrador()">Buscar</button>
+              </div>
+            </div>
+
+            @if (ticketEncontrado()) {
+              <div class="ticket-found-summary">
+                <div>Folio: <b>{{ ticketEncontrado()?.folio }}</b></div>
+                <div>Total del Ticket: <b>${{ ticketEncontrado()?.total }} MXN</b></div>
+                <div>Estado: <b>{{ ticketEncontrado()?.facturado ? 'Facturado previamente' : 'Listo para timbrar' }}</b></div>
+              </div>
+
+              <div class="form-fields-grid">
+                <div class="form-group">
+                  <label>RFC del Cliente:</label>
+                  <input type="text" [(ngModel)]="rfcCliente" class="form-input text-uppercase" />
+                </div>
+                <div class="form-group">
+                  <label>Razón Social:</label>
+                  <input type="text" [(ngModel)]="razonSocialCliente" class="form-input text-uppercase" />
+                </div>
+                <div class="form-group">
+                  <label>Código Postal:</label>
+                  <input type="text" [(ngModel)]="cpCliente" class="form-input" />
+                </div>
+                <div class="form-group">
+                  <label>Correo del Cliente:</label>
+                  <input type="email" [(ngModel)]="correoCliente" placeholder="cliente@correo.com" class="form-input" />
+                </div>
+              </div>
+
+              <button 
+                type="button" 
+                class="btn-emit-counter-invoice" 
+                [disabled]="ticketEncontrado()?.facturado"
+                (click)="facturarEnMostrador()"
+              >
+                <span class="material-symbols-outlined">receipt_long</span>
+                <span>Timbrar Factura al Cliente Ahora</span>
+              </button>
+            }
+          </div>
+        </div>
+      </section>
+    }
+  </div>
+
+  <!-- Toast -->
+  @if (mensajeToast()) {
+    <div class="toast-notification">
+      <span class="material-symbols-outlined icon">check_circle</span>
+      <span>{{ mensajeToast() }}</span>
+    </div>
+  }
+</div>

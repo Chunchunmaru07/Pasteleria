@@ -1,0 +1,263 @@
+@import 'leaflet/dist/leaflet.css';
+
+/* ==========================================================================
+   OLENKA Y EZIS - TRADICIÓN EN LO DULCE
+   Paleta y Sistema de Diseño Tradicional Mexicano
+   Inspiración: Rosa Mexicano, Cempasúchil, Cajeta de Celaya, 
+                Chocolate de Metate, Verde Agave y Vainilla
+   ========================================================================== */
+
+:root {
+  /* --- Paleta Tradicional Mexicana de Repostería --- */
+  --color-primary: #C2185B;          /* Rosa Mexicano tradicional profundo */
+  --color-primary-vibrant: #E91E63;  /* Rosa Mexicano festivo */
+  --color-primary-hover: #AD1457;
+  --color-primary-active: #880E4F;
+  --color-primary-light: #FCE4EC;    /* Rosa suave glaseado */
+  --color-primary-glow: rgba(194, 24, 91, 0.28);
+
+  --color-accent: #D35400;           /* Cajeta quemada artesanal */
+  --color-cempasuchil: #E67E22;     /* Flor de Cempasúchil tradicional */
+  --color-accent-hover: #BA4A00;
+  --color-accent-light: #FEF5E7;     /* Crema de maíz dulce */
+  --color-gold: #F39C12;             /* Miel de piloncillo / Oro */
+
+  --color-green-agave: #117A65;      /* Verde Agave / Jade artesanal */
+  --color-green-light: #E8F8F5;
+
+  /* Neutros & Fondos Dulces Tradicionales */
+  --bg-cream: #FFFDF8;              /* Harina de trigo y vainilla mexicana */
+  --bg-cream-warm: #FAF2E6;         /* Masa de concha recién horneada */
+  --bg-surface: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-alt: #FFF9F2;
+  --bg-glass: rgba(255, 253, 248, 0.94);
+
+  /* Tipografía & Textos (Chocolate de Metate, Canela y Café de Olla) */
+  --text-espresso: #2C1810;          /* Café de olla concentrado / Chocolate de metate */
+  --text-chocolate: #4A2E2B;         /* Canela y cacao mexicano */
+  --text-muted: #84685D;             /* Piloncillo suave */
+  --text-light: #BCAAA4;
+  --text-white: #FFFFFF;
+
+  /* Bordes, Sombras & Efectos */
+  --border-soft: rgba(211, 84, 0, 0.18);
+  --border-delicate: rgba(194, 24, 91, 0.20);
+  --border-focus: var(--color-primary);
+
+  --shadow-sm: 0 2px 8px rgba(44, 24, 16, 0.05);
+  --shadow-md: 0 8px 24px rgba(44, 24, 16, 0.08);
+  --shadow-lg: 0 16px 40px rgba(44, 24, 16, 0.11), 0 4px 12px rgba(194, 24, 91, 0.08);
+  --shadow-glow: 0 8px 30px var(--color-primary-glow);
+  --shadow-card-hover: 0 20px 45px rgba(194, 24, 91, 0.18), 0 6px 18px rgba(44, 24, 16, 0.07);
+
+  /* Tipografía */
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-script: 'Caveat', cursive, sans-serif;
+
+  /* Curvaturas / Radios */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 36px;
+  --radius-pill: 9999px;
+
+  /* Transiciones */
+  --transition-fast: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ==========================================================================
+   Base & Reset
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-cream);
+  color: var(--text-espresso);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  min-height: 100vh;
+  /* Fondo cálido con sutil toque de Rosa Mexicano y Cempasúchil */
+  background-image: 
+    radial-gradient(circle at 10% 15%, rgba(252, 228, 236, 0.5) 0%, transparent 42%),
+    radial-gradient(circle at 90% 85%, rgba(254, 245, 231, 0.6) 0%, transparent 48%),
+    radial-gradient(circle at 50% 50%, rgba(232, 248, 245, 0.25) 0%, transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Selección de texto en Rosa Mexicano */
+::selection {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+/* Scrollbar personalizada mexicana */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-cream-warm);
+}
+::-webkit-scrollbar-thumb {
+  background: #E0BA9B;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--bg-cream-warm);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* Tipografía de Encabezados */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  color: var(--text-espresso);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+}
+
+p {
+  color: var(--text-chocolate);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+button {
+  font-family: var(--font-sans);
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background: none;
+}
+
+/* Material Symbols */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==========================================================================
+   Utilidades con Estilo Tradicional Mexicano
+   ========================================================================== */
+
+/* Subtítulos manuscritos con estilo artesanal */
+.handwritten-tag {
+  font-family: var(--font-script);
+  font-size: 1.6rem;
+  color: var(--color-accent);
+  font-weight: 700;
+  display: inline-block;
+  transform: rotate(-2deg);
+}
+
+/* Botón principal: Rosa Mexicano y Cempasúchil */
+.btn-sweet-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #C2185B 0%, #D81B60 50%, #AD1457 100%);
+  color: var(--text-white);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 12px 26px;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 8px 22px rgba(194, 24, 91, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+  transition: all var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-sweet-primary:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #AD1457 0%, #C2185B 60%, #E91E63 100%);
+  box-shadow: 0 12px 28px rgba(194, 24, 91, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  color: var(--text-white);
+}
+
+.btn-sweet-primary:active {
+  transform: translateY(0);
+}
+
+/* Botón secundario con acento en cajeta y vainilla */
+.btn-sweet-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--bg-surface);
+  color: var(--text-espresso);
+  border: 1.5px solid rgba(211, 84, 0, 0.28);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 12px 24px;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-smooth);
+}
+
+.btn-sweet-secondary:hover {
+  background: var(--color-accent-light);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Insignias tradicionales */
+.sweet-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.sweet-badge.gold {
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+.sweet-badge.agave {
+  background: var(--color-green-light);
+  color: var(--color-green-agave);
+}

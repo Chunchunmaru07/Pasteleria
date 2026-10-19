@@ -1,0 +1,429 @@
+<div class="catalogo-wrapper">
+  <!-- Barra de Conmutación de Roles -->
+  <div class="role-selector-bar">
+    <div class="role-selector-container">
+      <div class="role-info">
+        <span class="role-tag admin-tag">
+          <span class="material-symbols-outlined">admin_panel_settings</span> Modo Administrador
+        </span>
+        <span class="role-desc">Acceso total: <strong>cambiar precios</strong>, <strong>editar stock</strong>, <strong>quitar</strong> y <strong>agregar productos</strong>.</span>
+      </div>
+      <div class="role-switcher">
+        <span class="switch-label">Cambiar de rol:</span>
+        <a routerLink="/catalogo/clientes" class="role-pill">
+          <span class="material-symbols-outlined">person</span> Clientes
+        </a>
+        <a routerLink="/catalogo/trabajadores" class="role-pill">
+          <span class="material-symbols-outlined">badge</span> Trabajadores
+        </a>
+        <a routerLink="/catalogo/admin" class="role-pill active">
+          <span class="material-symbols-outlined">admin_panel_settings</span> Administrador
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="catalogo-container">
+    <!-- Encabezado de Administrador -->
+    <header class="catalogo-header">
+      <div class="admin-badge-header">
+        <span class="material-symbols-outlined">shield_person</span>
+        <span>Panel Maestro de Catálogo & Precios</span>
+      </div>
+      <h1 class="catalogo-title">Control Maestro de Productos</h1>
+      <p class="catalogo-subtitle">
+        Gestiona el catálogo completo de la pastelería. Puedes ajustar precios de venta, 
+        monitorear y cambiar el inventario disponible, retirar artículos descontinuados y dar de alta nuevas creaciones.
+      </p>
+
+      <!-- Barra de Acciones Principales de Administrador -->
+      <div class="admin-actions-bar">
+        <button type="button" class="btn-add-product-main" (click)="abrirModalAgregar()">
+          <span class="material-symbols-outlined">add_circle</span>
+          <span>Agregar Nuevo Producto al Catálogo</span>
+        </button>
+
+        <button type="button" class="btn-reset-default" (click)="restablecerCatalogo()" title="Restablecer los 8 productos originales">
+          <span class="material-symbols-outlined">restart_alt</span>
+          <span>Restablecer por defecto</span>
+        </button>
+      </div>
+
+      <!-- Filtros y Búsqueda -->
+      <div class="filter-controls">
+        <div class="search-box">
+          <span class="material-symbols-outlined search-icon">search</span>
+          <input 
+            type="text" 
+            placeholder="Buscar por nombre, categoría o sabor..." 
+            [ngModel]="busqueda()"
+            (ngModelChange)="busqueda.set($event)"
+            class="search-input"
+          />
+          @if (busqueda()) {
+            <button class="clear-search-btn" (click)="busqueda.set('')" title="Limpiar">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          }
+        </div>
+
+        <div class="category-pills">
+          @for (cat of catalogoService.categorias(); track cat) {
+            <button 
+              type="button" 
+              class="cat-pill" 
+              [class.active]="categoriaFiltro() === cat"
+              (click)="categoriaFiltro.set(cat)"
+            >
+              {{ cat }}
+            </button>
+          }
+        </div>
+      </div>
+    </header>
+
+    <!-- Grid de Productos con Controles de Administrador -->
+    <section class="products-grid-section">
+      @if (productosFiltrados().length === 0) {
+        <div class="empty-state">
+          <span class="material-symbols-outlined empty-icon">cookie</span>
+          <h3>No hay productos que coincidan</h3>
+          <p>Puedes agregar un nuevo producto o limpiar los filtros.</p>
+          <button class="btn-add-product-main" (click)="abrirModalAgregar()">
+            <span class="material-symbols-outlined">add</span>
+            <span>Crear este producto ahora</span>
+          </button>
+        </div>
+      } @else {
+        <div class="products-grid">
+          @for (prod of productosFiltrados(); track prod.id) {
+            <article class="product-card admin-card">
+              <!-- Botón Quitar Producto (Eliminar) -->
+              <button 
+                type="button" 
+                class="btn-delete-product" 
+                (click)="abrirConfirmacionEliminar(prod)"
+                title="Quitar este producto del catálogo"
+              >
+                <span class="material-symbols-outlined">delete_forever</span>
+              </button>
+
+              <div class="product-img-wrap">
+                <img [src]="prod.imagen" [alt]="prod.nombre" loading="lazy" />
+                @if (prod.badge) {
+                  <div class="product-badge">{{ prod.badge }}</div>
+                }
+              </div>
+
+              <div class="product-body">
+                <div class="product-category-row">
+                  <span class="product-category">{{ prod.categoria }}</span>
+                  <span class="product-portions">{{ prod.porciones || 'Porción individual' }}</span>
+                </div>
+
+                <h3 class="product-title">{{ prod.nombre }}</h3>
+                <p class="product-flavor">{{ prod.sabor }}</p>
+
+                <!-- ==========================================================
+                     1. CONTROL ADMINISTRADOR: CAMBIAR PRECIO
+                     ========================================================== -->
+                <div class="admin-control-box price-editor-box">
+                  <div class="control-box-header">
+                    <span class="control-label">
+                      <span class="material-symbols-outlined icon">payments</span>
+                      <strong>Precio de Venta ($ MXN)</strong>
+                    </span>
+                    <span class="badge-action">Editar Precio</span>
+                  </div>
+
+                  <div class="price-input-row">
+                    <span class="currency-symbol">$</span>
+                    <input 
+                      type="number" 
+                      step="1"
+                      min="0"
+                      [value]="getValorInputPrecio(prod)"
+                      (input)="setValorInputPrecio(prod.id, $any($event.target).value)"
+                      class="price-number-input"
+                      title="Modifica el precio aquí"
+                    />
+                    <span class="currency-code">MXN</span>
+                    <button 
+                      type="button" 
+                      class="btn-save-price" 
+                      (click)="guardarPrecioManual(prod)"
+                      title="Guardar nuevo precio"
+                    >
+                      <span class="material-symbols-outlined">save</span>
+                      <span>Guardar</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- ==========================================================
+                     2. CONTROL ADMINISTRADOR: EDITAR STOCK (CANTIDAD DISPONIBLE)
+                     ========================================================== -->
+                <div class="admin-control-box stock-editor-box">
+                  <div class="control-box-header">
+                    <span class="control-label">
+                      <span class="material-symbols-outlined icon">inventory</span>
+                      <strong>Cantidad Disponible</strong>
+                    </span>
+                    <span class="current-stock-val">En mostrador: <b>{{ prod.stock }}</b></span>
+                  </div>
+
+                  <div class="stock-controls-row">
+                    <button type="button" class="btn-stock-delta" (click)="ajustarStock(prod, -5)" [disabled]="prod.stock <= 0">-5</button>
+                    <button type="button" class="btn-stock-delta" (click)="ajustarStock(prod, -1)" [disabled]="prod.stock <= 0">-1</button>
+
+                    <div class="stock-direct-input-wrap">
+                      <input 
+                        type="number" 
+                        min="0"
+                        [value]="getValorInputStock(prod)"
+                        (input)="setValorInputStock(prod.id, $any($event.target).value)"
+                        class="stock-number-input"
+                      />
+                      <button type="button" class="btn-save-stock" (click)="guardarStockManual(prod)" title="Guardar stock">
+                        <span class="material-symbols-outlined">check</span>
+                      </button>
+                    </div>
+
+                    <button type="button" class="btn-stock-delta plus" (click)="ajustarStock(prod, +1)">+1</button>
+                    <button type="button" class="btn-stock-delta plus" (click)="ajustarStock(prod, +5)">+5</button>
+                  </div>
+                </div>
+
+                <!-- 3. Selección de Prueba para Admin -->
+                <div class="admin-footer-selection">
+                  <span class="select-label">Selección rápida:</span>
+                  <div class="qty-stepper-admin">
+                    <button type="button" class="qty-btn" [disabled]="getCantidadSeleccionada(prod.id) <= 0" (click)="decrementar(prod.id)">
+                      <span class="material-symbols-outlined">remove</span>
+                    </button>
+                    <span class="qty-val">{{ getCantidadSeleccionada(prod.id) }}</span>
+                    <button type="button" class="qty-btn" [disabled]="getCantidadSeleccionada(prod.id) >= prod.stock" (click)="seleccionar(prod.id)">
+                      <span class="material-symbols-outlined">add</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL AGREGAR NUEVO PRODUCTO (EXCLUSIVO ADMIN)
+       ========================================================================== -->
+  @if (modalAgregarAbierto()) {
+    <div class="modal-backdrop" (click)="cerrarModalAgregar()">
+      <div class="modal-card modal-form-card" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <div class="modal-title-box">
+            <span class="material-symbols-outlined icon">add_circle</span>
+            <h3>Agregar Nuevo Producto al Catálogo</h3>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="cerrarModalAgregar()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </header>
+
+        <form (ngSubmit)="guardarNuevoProducto()" class="modal-form-body">
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="nombreProd">Nombre del Producto *</label>
+              <input 
+                id="nombreProd"
+                type="text" 
+                required 
+                placeholder="Ej. Tarta de Guayaba & Queso Crema" 
+                [ngModel]="formNuevo().nombre" 
+                (ngModelChange)="formNuevo().nombre = $event"
+                name="nombre"
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group flex-1">
+              <label for="catProd">Categoría</label>
+              <select 
+                id="catProd" 
+                [ngModel]="formNuevo().categoria" 
+                (ngModelChange)="formNuevo().categoria = $event"
+                name="categoria"
+                class="form-select"
+              >
+                <option value="Pasteles Tradicionales">Pasteles Tradicionales</option>
+                <option value="Pan Dulce Mexicano">Pan Dulce Mexicano</option>
+                <option value="Tartas & Cheesecakes">Tartas & Cheesecakes</option>
+                <option value="Repostería Internacional">Repostería Internacional</option>
+                <option value="Especialidades">Especialidades</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="precioProd">Precio ($ MXN) *</label>
+              <input 
+                id="precioProd"
+                type="number" 
+                min="0"
+                step="1"
+                required
+                [ngModel]="formNuevo().precio" 
+                (ngModelChange)="formNuevo().precio = $event"
+                name="precio"
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group flex-1">
+              <label for="stockProd">Cantidad Disponible Inicial (Stock) *</label>
+              <input 
+                id="stockProd"
+                type="number" 
+                min="0"
+                step="1"
+                required
+                [ngModel]="formNuevo().stock" 
+                (ngModelChange)="formNuevo().stock = $event"
+                name="stock"
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group flex-1">
+              <label for="badgeProd">Etiqueta Especial</label>
+              <input 
+                id="badgeProd"
+                type="text" 
+                placeholder="Ej. Nuevo, Especial" 
+                [ngModel]="formNuevo().badge" 
+                (ngModelChange)="formNuevo().badge = $event"
+                name="badge"
+                class="form-input"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="saborProd">Sabor / Ingrediente Principal</label>
+              <input 
+                id="saborProd"
+                type="text" 
+                placeholder="Ej. Guayaba rosa y queso crema con canela" 
+                [ngModel]="formNuevo().sabor" 
+                (ngModelChange)="formNuevo().sabor = $event"
+                name="sabor"
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group flex-1">
+              <label for="porcProd">Porciones / Tamaño</label>
+              <input 
+                id="porcProd"
+                type="text" 
+                placeholder="Ej. 10-12 porciones o Por pieza" 
+                [ngModel]="formNuevo().porciones" 
+                (ngModelChange)="formNuevo().porciones = $event"
+                name="porciones"
+                class="form-input"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="descProd">Descripción de la Receta</label>
+            <textarea 
+              id="descProd"
+              rows="2" 
+              placeholder="Describe el pan o pastel, tipo de masa, relleno y decoración..."
+              [ngModel]="formNuevo().descripcion" 
+              (ngModelChange)="formNuevo().descripcion = $event"
+              name="descripcion"
+              class="form-textarea"
+            ></textarea>
+          </div>
+
+          <!-- Selección Rápida de Imagen -->
+          <div class="form-group">
+            <label>Seleccionar Imagen del Producto (Elige una o escribe la URL)</label>
+            <div class="image-suggestions-row">
+              @for (img of imagenesSugeridas; track img.url) {
+                <button 
+                  type="button" 
+                  class="img-suggestion-btn" 
+                  [class.selected]="formNuevo().imagen === img.url"
+                  (click)="seleccionarImagenSugerida(img.url)"
+                  [title]="img.label"
+                >
+                  <img [src]="img.url" [alt]="img.label" />
+                  <span>{{ img.label }}</span>
+                </button>
+              }
+            </div>
+            <input 
+              type="url" 
+              placeholder="O ingresa una URL personalizada de imagen..."
+              [ngModel]="formNuevo().imagen" 
+              (ngModelChange)="formNuevo().imagen = $event"
+              name="imagen"
+              class="form-input mt-2"
+            />
+          </div>
+
+          <footer class="modal-form-footer">
+            <button type="button" class="btn-cancel" (click)="cerrarModalAgregar()">Cancelar</button>
+            <button type="submit" class="btn-submit-product">
+              <span class="material-symbols-outlined">save</span>
+              <span>Guardar Producto en Catálogo</span>
+            </button>
+          </footer>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- ==========================================================================
+       MODAL DE CONFIRMACIÓN: QUITAR PRODUCTO (EXCLUSIVO ADMIN)
+       ========================================================================== -->
+  @if (productoAEliminar()) {
+    <div class="modal-backdrop" (click)="cancelarEliminar()">
+      <div class="modal-card modal-confirm-card" (click)="$event.stopPropagation()">
+        <div class="confirm-content">
+          <div class="confirm-icon-wrap">
+            <span class="material-symbols-outlined">warning</span>
+          </div>
+          <h3>¿Deseas quitar este producto del catálogo?</h3>
+          <p class="confirm-item-name">"{{ productoAEliminar()?.nombre }}"</p>
+          <p class="confirm-desc">
+            Esta acción eliminará el producto del catálogo para clientes, trabajadores y el sistema.
+            Puedes volver a crearlo en cualquier momento.
+          </p>
+
+          <div class="confirm-actions">
+            <button type="button" class="btn-cancel" (click)="cancelarEliminar()">Cancelar</button>
+            <button type="button" class="btn-danger-confirm" (click)="ejecutarEliminar()">
+              <span class="material-symbols-outlined">delete_forever</span>
+              <span>Sí, Quitar Producto</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Toast -->
+  @if (mensajeToast()) {
+    <div class="toast-notification">
+      <span class="material-symbols-outlined icon">verified</span>
+      <span>{{ mensajeToast() }}</span>
+    </div>
+  }
+</div>

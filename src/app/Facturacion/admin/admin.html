@@ -1,0 +1,333 @@
+<div class="facturacion-wrapper">
+  <!-- Barra de Conmutación de Roles -->
+  <div class="role-selector-bar">
+    <div class="role-selector-container">
+      <div class="role-info">
+        <span class="role-tag admin-tag">
+          <span class="material-symbols-outlined">admin_panel_settings</span> Modo Administrador
+        </span>
+        <span class="role-desc">Consulta las <strong>Ventas Totales de la Tienda divididas por Día, Semana y Mes</strong> y auditoría de facturación.</span>
+      </div>
+      <div class="role-switcher">
+        <span class="switch-label">Cambiar de vista:</span>
+        <a routerLink="/facturacion/cliente" class="role-pill">
+          <span class="material-symbols-outlined">receipt_long</span> Facturar Compra
+        </a>
+        <a routerLink="/facturacion/trabajador" class="role-pill">
+          <span class="material-symbols-outlined">badge</span> Mis Ventas (Trabajador)
+        </a>
+        <a routerLink="/facturacion/admin" class="role-pill active">
+          <span class="material-symbols-outlined">query_stats</span> Ventas Totales (Admin)
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="facturacion-container">
+    <!-- Encabezado de Administrador -->
+    <header class="facturacion-header">
+      <div class="admin-badge-header">
+        <span class="material-symbols-outlined">storefront</span>
+        <span>Auditoría Financiera Olenka Y Ezis</span>
+      </div>
+      <h1 class="facturacion-title">Ventas Totales de la Tienda</h1>
+      <p class="facturacion-subtitle">
+        Monitorea el flujo de caja e ingresos brutos de toda la pastelería, clasificados con precisión en 
+        <strong>Día, Semana y Mes</strong>, incluyendo desglose de impuestos e historial fiscal ante el SAT.
+      </p>
+
+      <!-- ======================================================================
+           3 TARJETAS MAESTRAS DE VENTAS TOTALES DE LA TIENDA (DÍA, SEMANA, MES)
+           ====================================================================== -->
+      <div class="kpi-store-grid">
+        <!-- 1. VENTAS TOTALES DEL DÍA -->
+        <div class="kpi-store-card day-card" [class.active-card]="filtroPeriodo() === 'dia'" (click)="cambiarPeriodo('dia')">
+          <div class="kpi-card-top">
+            <span class="material-symbols-outlined icon">today</span>
+            <span class="kpi-period-title">Ventas Totales del Día (Hoy)</span>
+          </div>
+          <div class="kpi-amount">${{ facturacionService.totalTiendaDia() }} <span class="currency">MXN</span></div>
+          <div class="kpi-footer">
+            <span>{{ facturacionService.ventasTiendaDia().length }} transacciones totales hoy</span>
+            <span class="kpi-status-badge">Turno en curso</span>
+          </div>
+        </div>
+
+        <!-- 2. VENTAS TOTALES DE LA SEMANA -->
+        <div class="kpi-store-card week-card" [class.active-card]="filtroPeriodo() === 'semana'" (click)="cambiarPeriodo('semana')">
+          <div class="kpi-card-top">
+            <span class="material-symbols-outlined icon">date_range</span>
+            <span class="kpi-period-title">Ventas Totales de la Semana</span>
+          </div>
+          <div class="kpi-amount">${{ facturacionService.totalTiendaSemana() }} <span class="currency">MXN</span></div>
+          <div class="kpi-footer">
+            <span>{{ facturacionService.ventasTiendaSemana().length }} transacciones esta semana</span>
+            <span class="kpi-status-badge">Semana 42</span>
+          </div>
+        </div>
+
+        <!-- 3. VENTAS TOTALES DEL MES -->
+        <div class="kpi-store-card month-card" [class.active-card]="filtroPeriodo() === 'mes'" (click)="cambiarPeriodo('mes')">
+          <div class="kpi-card-top">
+            <span class="material-symbols-outlined icon">calendar_month</span>
+            <span class="kpi-period-title">Ventas Totales del Mes</span>
+          </div>
+          <div class="kpi-amount">${{ facturacionService.totalTiendaMes() }} <span class="currency">MXN</span></div>
+          <div class="kpi-footer">
+            <span>{{ facturacionService.ventasTiendaMes().length }} transacciones en Octubre</span>
+            <span class="kpi-status-badge">Mes activo</span>
+          </div>
+        </div>
+
+        <!-- 4. TOTAL IVA RECAUDADO (Métrica de Soporte Fiscal) -->
+        <div class="kpi-store-card tax-card">
+          <div class="kpi-card-top">
+            <span class="material-symbols-outlined icon">account_balance</span>
+            <span class="kpi-period-title">IVA Trasladado (16% Mes)</span>
+          </div>
+          <div class="kpi-amount tax-amount">${{ facturacionService.ivaTotalMes() }} <span class="currency">MXN</span></div>
+          <div class="kpi-footer">
+            <span>{{ facturacionService.facturas().length }} facturas timbradas SAT</span>
+            <span class="kpi-status-badge tax">SAT CFDI 4.0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de Simulación de Venta en Tienda para Demostración -->
+      <div class="admin-simulation-bar">
+        <span class="simulation-title">Simular Venta en Tienda (actualiza totales en vivo):</span>
+        <button type="button" class="btn-sim-sale" (click)="simularVentaTienda('Pastel de Cumpleaños Especial', 850)">
+          + Simular Venta $850
+        </button>
+        <button type="button" class="btn-sim-sale" (click)="simularVentaTienda('Pedido Mesa de Dulces', 2400)">
+          + Simular Venta $2,400
+        </button>
+      </div>
+
+      <!-- Pestañas de Navegación -->
+      <div class="tabs-switcher">
+        <button 
+          type="button" 
+          class="tab-btn" 
+          [class.active]="pestanaActual() === 'ventas'"
+          (click)="pestanaActual.set('ventas')"
+        >
+          <span class="material-symbols-outlined">receipt_long</span>
+          <span>Transacciones de la Tienda (Filtrables por Día, Semana y Mes)</span>
+        </button>
+
+        <button 
+          type="button" 
+          class="tab-btn" 
+          [class.active]="pestanaActual() === 'facturas'"
+          (click)="pestanaActual.set('facturas')"
+        >
+          <span class="material-symbols-outlined">verified</span>
+          <span>Auditoría de Facturas Emitidas ({{ facturacionService.facturas().length }})</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ======================================================================
+         PESTAÑA 1: TRANSACCIONES TOTALES DE LA TIENDA
+         ====================================================================== -->
+    @if (pestanaActual() === 'ventas') {
+      <section class="admin-transactions-section">
+        <!-- Desglose por Trabajador en Tienda -->
+        <div class="team-breakdown-card">
+          <h4>Ventas del Mes Desglosadas por Trabajador</h4>
+          <div class="workers-chips-grid">
+            @for (w of desglosePorTrabajador(); track w.nombre) {
+              <div class="worker-chip">
+                <span class="material-symbols-outlined icon">person</span>
+                <div class="worker-chip-info">
+                  <strong>{{ w.nombre }}</strong>
+                  <span>Total: <b>${{ w.total }} MXN</b> ({{ w.tickets }} tickets)</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Tabla de Ventas Filtrable -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-title-box">
+              <h3>Todas las Ventas de la Tienda</h3>
+              <p>Periodo visualizado: <span class="badge-filter-period">{{ filtroPeriodo() | uppercase }}</span></p>
+            </div>
+
+            <!-- Filtros de periodo y búsqueda -->
+            <div class="table-filter-actions">
+              <div class="period-button-group">
+                <button type="button" class="btn-period" [class.active]="filtroPeriodo() === 'dia'" (click)="cambiarPeriodo('dia')">
+                  DÍA
+                </button>
+                <button type="button" class="btn-period" [class.active]="filtroPeriodo() === 'semana'" (click)="cambiarPeriodo('semana')">
+                  SEMANA
+                </button>
+                <button type="button" class="btn-period" [class.active]="filtroPeriodo() === 'mes'" (click)="cambiarPeriodo('mes')">
+                  MES
+                </button>
+              </div>
+
+              <div class="search-mini">
+                <span class="material-symbols-outlined">search</span>
+                <input 
+                  type="text" 
+                  placeholder="Buscar folio o producto..." 
+                  [ngModel]="busquedaTicket()"
+                  (ngModelChange)="busquedaTicket.set($event)"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="store-table">
+              <thead>
+                <tr>
+                  <th>Folio</th>
+                  <th>Fecha y Hora</th>
+                  <th>Atendido Por</th>
+                  <th>Conceptos / Postres</th>
+                  <th>Método Pago</th>
+                  <th>Subtotal</th>
+                  <th>IVA (16%)</th>
+                  <th>Total Venta</th>
+                  <th>Factura</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (v of ventasFiltradasPorPeriodo(); track v.folio) {
+                  <tr>
+                    <td><strong>{{ v.folio }}</strong></td>
+                    <td>{{ v.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+                    <td><span class="worker-name-tag">{{ v.trabajadorNombre }}</span></td>
+                    <td>
+                      <div class="items-cell">
+                        @for (it of v.items; track it.nombre) {
+                          <span>{{ it.cantidad }}x {{ it.nombre }}</span>
+                        }
+                      </div>
+                    </td>
+                    <td><span class="payment-tag">{{ v.metodoPago }}</span></td>
+                    <td>${{ v.subtotal }}</td>
+                    <td>${{ v.iva }}</td>
+                    <td><strong class="total-price-cell">${{ v.total }} MXN</strong></td>
+                    <td>
+                      @if (v.facturado) {
+                        <span class="badge-status invoiced">
+                          <span class="material-symbols-outlined">check_circle</span> Facturado
+                        </span>
+                      } @else {
+                        <span class="badge-status pending">Sin facturar</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- ======================================================================
+         PESTAÑA 2: AUDITORÍA DE FACTURAS EMITIDAS SAT
+         ====================================================================== -->
+    @if (pestanaActual() === 'facturas') {
+      <section class="invoices-audit-section">
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-title-box">
+              <h3>Comprobantes Fiscales Digitales Emitidos (CFDI 4.0)</h3>
+              <p>Registro oficial de facturas timbradas ante el Servicio de Administración Tributaria.</p>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="store-table">
+              <thead>
+                <tr>
+                  <th>Folio Factura</th>
+                  <th>Ticket Origen</th>
+                  <th>Fecha Emisión</th>
+                  <th>RFC Receptor</th>
+                  <th>Razón Social</th>
+                  <th>Uso CFDI</th>
+                  <th>Total Facturado</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (f of facturacionService.facturas(); track f.folioFactura) {
+                  <tr>
+                    <td><strong>{{ f.folioFactura }}</strong></td>
+                    <td>{{ f.folioTicket }}</td>
+                    <td>{{ f.fechaEmision | date:'dd/MM/yyyy HH:mm' }}</td>
+                    <td><code>{{ f.rfcReceptor }}</code></td>
+                    <td><strong>{{ f.razonSocial }}</strong></td>
+                    <td>{{ f.usoCFDI }}</td>
+                    <td><strong class="total-price-cell">${{ f.total }} MXN</strong></td>
+                    <td>
+                      <button type="button" class="btn-view-invoice-modal" (click)="verFacturaModal(f)">
+                        <span class="material-symbols-outlined">visibility</span>
+                        <span>Ver CFDI</span>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    }
+  </div>
+
+  <!-- Modal para ver factura timbrada -->
+  @if (facturaSeleccionada()) {
+    <div class="modal-backdrop" (click)="cerrarModalFactura()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <div class="modal-title-box">
+            <span class="material-symbols-outlined icon">receipt_long</span>
+            <h3>Factura: {{ facturaSeleccionada()?.folioFactura }}</h3>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="cerrarModalFactura()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </header>
+
+        <div class="modal-body">
+          <div class="cfdi-modal-details">
+            <div><strong>Folio Fiscal (UUID SAT):</strong> <code>{{ facturaSeleccionada()?.uuidSAT }}</code></div>
+            <div><strong>RFC Receptor:</strong> {{ facturaSeleccionada()?.rfcReceptor }}</div>
+            <div><strong>Nombre / Razón Social:</strong> {{ facturaSeleccionada()?.razonSocial }}</div>
+            <div><strong>Régimen Fiscal:</strong> {{ facturaSeleccionada()?.regimenFiscal }}</div>
+            <div><strong>Uso de CFDI:</strong> {{ facturaSeleccionada()?.usoCFDI }}</div>
+            <div><strong>Correo de Envío:</strong> {{ facturaSeleccionada()?.correo }}</div>
+            <div><strong>Fecha de Timbrado:</strong> {{ facturaSeleccionada()?.fechaEmision | date:'dd/MM/yyyy HH:mm:ss' }}</div>
+            <div class="modal-amount-highlight">
+              <span>Subtotal: ${{ facturaSeleccionada()?.subtotal }} | IVA 16%: ${{ facturaSeleccionada()?.iva }}</span>
+              <strong>Total: ${{ facturaSeleccionada()?.total }} MXN</strong>
+            </div>
+          </div>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn-close-simple" (click)="cerrarModalFactura()">Cerrar</button>
+        </footer>
+      </div>
+    </div>
+  }
+
+  <!-- Toast -->
+  @if (mensajeToast()) {
+    <div class="toast-notification">
+      <span class="material-symbols-outlined icon">verified</span>
+      <span>{{ mensajeToast() }}</span>
+    </div>
+  }
+</div>

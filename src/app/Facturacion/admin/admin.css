@@ -1,0 +1,695 @@
+/* ==========================================================================
+   FACTURACIÓN - MODO ADMINISTRADOR
+   Ventas Totales de la Tienda (Día, Semana y Mes) y Auditoría Fiscal
+   ========================================================================== */
+
+.facturacion-wrapper {
+  background-color: var(--bg-cream, #FFFDF8);
+  min-height: calc(100vh - 120px);
+  padding-bottom: 5rem;
+}
+
+/* Barra de Conmutación de Roles */
+.role-selector-bar {
+  background: linear-gradient(90deg, #FCE4EC 0%, #FAF2E6 50%, #FCE4EC 100%);
+  border-bottom: 1.5px solid rgba(194, 24, 91, 0.25);
+  padding: 0.65rem 1.5rem;
+}
+
+.role-selector-container {
+  max-width: 1320px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.role-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.role-tag.admin-tag {
+  background: var(--color-primary, #C2185B);
+  color: #FFFFFF;
+  border-radius: var(--radius-pill, 9999px);
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 6px rgba(194, 24, 91, 0.25);
+}
+
+.role-desc {
+  font-size: 0.82rem;
+  color: var(--text-chocolate, #4A2E2B);
+  font-weight: 500;
+}
+
+.role-switcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.switch-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted, #84685D);
+  text-transform: uppercase;
+}
+
+.role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill, 9999px);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  background: #FFFFFF;
+  color: var(--text-chocolate, #4A2E2B);
+  border: 1px solid rgba(211, 84, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.role-pill:hover {
+  border-color: var(--color-primary, #C2185B);
+  color: var(--color-primary, #C2185B);
+}
+
+.role-pill.active {
+  background: var(--color-primary, #C2185B);
+  color: #FFFFFF;
+  border-color: var(--color-primary, #C2185B);
+  box-shadow: 0 2px 8px rgba(194, 24, 91, 0.3);
+}
+
+/* ==========================================================================
+   Header del Administrador
+   ========================================================================== */
+.facturacion-container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+}
+
+.facturacion-header {
+  text-align: center;
+  max-width: 950px;
+  margin: 0 auto 3rem;
+}
+
+.admin-badge-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-primary-light, #FCE4EC);
+  color: var(--color-primary, #C2185B);
+  border: 1.5px solid rgba(194, 24, 91, 0.35);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: var(--radius-pill, 9999px);
+  margin-bottom: 0.8rem;
+}
+
+.facturacion-title {
+  font-size: 2.85rem;
+  color: var(--text-espresso, #2C1810);
+  margin-bottom: 0.6rem;
+  letter-spacing: -0.02em;
+}
+
+.facturacion-subtitle {
+  font-size: 1.05rem;
+  color: var(--text-chocolate, #4A2E2B);
+  line-height: 1.55;
+  margin-bottom: 2rem;
+}
+
+/* ==========================================================================
+   4 TARJETAS KPI DE VENTAS TOTALES DE LA TIENDA (DÍA, SEMANA, MES, IVA)
+   ========================================================================== */
+.kpi-store-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+  text-align: left;
+}
+
+.kpi-store-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 1.5rem;
+  border: 2px solid rgba(211, 84, 0, 0.2);
+  box-shadow: 0 8px 24px rgba(44, 24, 16, 0.05);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-store-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(44, 24, 16, 0.1);
+}
+
+.kpi-store-card.active-card {
+  border-color: var(--color-primary, #C2185B);
+  box-shadow: 0 12px 30px rgba(194, 24, 91, 0.2);
+  background: #FFFDFB;
+}
+
+.kpi-card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.85rem;
+}
+
+.kpi-card-top .icon {
+  font-size: 22px;
+  padding: 6px;
+  border-radius: 10px;
+}
+
+.day-card .icon { background: #FEF5E7; color: #D35400; }
+.week-card .icon { background: #E8F8F5; color: #117A65; }
+.month-card .icon { background: #FCE4EC; color: #C2185B; }
+.tax-card .icon { background: #FEF9E7; color: #F39C12; }
+
+.kpi-period-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-espresso, #2C1810);
+  letter-spacing: 0.03em;
+}
+
+.kpi-amount {
+  font-family: var(--font-serif);
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: var(--color-primary, #C2185B);
+  line-height: 1.1;
+  margin-bottom: 0.85rem;
+}
+
+.tax-amount {
+  color: var(--color-accent, #D35400);
+}
+
+.kpi-amount .currency {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-muted, #84685D);
+}
+
+.kpi-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--text-muted, #84685D);
+  padding-top: 8px;
+  border-top: 1px dashed rgba(211, 84, 0, 0.2);
+}
+
+.kpi-status-badge {
+  font-weight: 800;
+  color: var(--color-primary, #C2185B);
+}
+
+.kpi-status-badge.tax {
+  color: var(--color-green-agave, #117A65);
+}
+
+/* Barra de Simulación */
+.admin-simulation-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 2rem;
+  padding: 8px 18px;
+  background: var(--bg-cream-warm, #FAF2E6);
+  border-radius: var(--radius-pill, 9999px);
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid rgba(211, 84, 0, 0.2);
+  flex-wrap: wrap;
+}
+
+.simulation-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-chocolate, #4A2E2B);
+}
+
+.btn-sim-sale {
+  background: #FFFFFF;
+  border: 1px solid rgba(194, 24, 91, 0.3);
+  color: var(--color-primary, #C2185B);
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill, 9999px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-sim-sale:hover {
+  background: var(--color-primary, #C2185B);
+  color: #FFFFFF;
+}
+
+/* Tabs */
+.tabs-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: var(--radius-pill, 9999px);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: #FFFFFF;
+  color: var(--text-chocolate, #4A2E2B);
+  border: 1.5px solid rgba(211, 84, 0, 0.25);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  background: var(--bg-cream-warm, #FAF2E6);
+}
+
+.tab-btn.active {
+  background: var(--color-primary, #C2185B);
+  color: #FFFFFF;
+  border-color: var(--color-primary, #C2185B);
+  box-shadow: 0 4px 14px rgba(194, 24, 91, 0.3);
+}
+
+/* ==========================================================================
+   Desglose por Trabajador (Team Breakdown Card)
+   ========================================================================== */
+.team-breakdown-card {
+  background: #FFFFFF;
+  border-radius: 18px;
+  padding: 1.25rem 1.75rem;
+  border: 1.5px solid rgba(211, 84, 0, 0.2);
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 16px rgba(44, 24, 16, 0.04);
+}
+
+.team-breakdown-card h4 {
+  font-size: 0.95rem;
+  color: var(--text-espresso, #2C1810);
+  margin-bottom: 1rem;
+}
+
+.workers-chips-grid {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.worker-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-cream-warm, #FAF2E6);
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(211, 84, 0, 0.2);
+}
+
+.worker-chip .icon {
+  font-size: 22px;
+  color: var(--color-green-agave, #117A65);
+}
+
+.worker-chip-info {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8rem;
+}
+
+.worker-chip-info strong {
+  color: var(--text-espresso, #2C1810);
+}
+
+.worker-chip-info span b {
+  color: var(--color-primary, #C2185B);
+}
+
+/* ==========================================================================
+   Tablas Maestras (Ventas y Auditoría)
+   ========================================================================== */
+.table-card {
+  background: #FFFFFF;
+  border-radius: 22px;
+  padding: 2rem;
+  box-shadow: 0 8px 24px rgba(44, 24, 16, 0.05);
+  border: 1.5px solid rgba(211, 84, 0, 0.2);
+}
+
+.table-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.table-title-box h3 {
+  font-size: 1.35rem;
+  color: var(--text-espresso, #2C1810);
+  margin-bottom: 2px;
+}
+
+.badge-filter-period {
+  background: var(--color-primary-light, #FCE4EC);
+  color: var(--color-primary, #C2185B);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.table-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.period-button-group {
+  display: flex;
+  background: var(--bg-cream-warm, #FAF2E6);
+  padding: 3px;
+  border-radius: var(--radius-pill, 9999px);
+  border: 1px solid rgba(211, 84, 0, 0.2);
+}
+
+.btn-period {
+  background: none;
+  border: none;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill, 9999px);
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--text-chocolate, #4A2E2B);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-period.active {
+  background: var(--color-primary, #C2185B);
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(194, 24, 91, 0.3);
+}
+
+.search-mini {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFFFFF;
+  border: 1.5px solid rgba(211, 84, 0, 0.25);
+  padding: 6px 12px;
+  border-radius: var(--radius-pill, 9999px);
+}
+
+.search-mini input {
+  border: none;
+  outline: none;
+  font-size: 0.85rem;
+  width: 160px;
+}
+
+.search-mini .material-symbols-outlined {
+  color: var(--color-primary, #C2185B);
+  font-size: 18px;
+}
+
+/* Tabla */
+.table-responsive {
+  overflow-x: auto;
+}
+
+.store-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.store-table th {
+  background: var(--bg-cream-warm, #FAF2E6);
+  text-align: left;
+  padding: 12px 14px;
+  color: var(--text-espresso, #2C1810);
+  font-weight: 700;
+  border-bottom: 2px solid rgba(211, 84, 0, 0.2);
+  white-space: nowrap;
+}
+
+.store-table td {
+  padding: 12px 14px;
+  border-bottom: 1px dashed rgba(211, 84, 0, 0.15);
+  color: var(--text-chocolate, #4A2E2B);
+}
+
+.worker-name-tag {
+  background: #E8F8F5;
+  color: #117A65;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+
+.items-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8rem;
+}
+
+.payment-tag {
+  background: var(--bg-cream-warm, #FAF2E6);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.total-price-cell {
+  font-size: 1rem;
+  color: var(--color-primary, #C2185B);
+}
+
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill, 9999px);
+}
+
+.badge-status.invoiced {
+  background: #E8F8F5;
+  color: #117A65;
+}
+
+.badge-status.pending {
+  background: #FEF3C7;
+  color: #B45309;
+}
+
+.btn-view-invoice-modal {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--color-primary, #C2185B);
+  color: #FFFFFF;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill, 9999px);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-view-invoice-modal:hover {
+  background: var(--color-primary-hover, #AD1457);
+}
+
+.btn-view-invoice-modal .material-symbols-outlined {
+  font-size: 14px;
+}
+
+/* Modal Factura Detalle */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(44, 24, 16, 0.7);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2500;
+  padding: 1.5rem;
+}
+
+.modal-card {
+  background: #FFFFFF;
+  border-radius: 22px;
+  max-width: 580px;
+  width: 100%;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+.modal-header {
+  padding: 1.25rem 1.5rem;
+  background: var(--bg-cream-warm, #FAF2E6);
+  border-bottom: 1px solid rgba(211, 84, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-title-box .icon {
+  color: var(--color-primary, #C2185B);
+}
+
+.modal-title-box h3 {
+  font-size: 1.25rem;
+  color: var(--text-espresso, #2C1810);
+  margin: 0;
+}
+
+.btn-close-modal {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFFFFF;
+  border: 1px solid rgba(211, 84, 0, 0.2);
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.cfdi-modal-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.88rem;
+}
+
+.cfdi-modal-details code {
+  color: var(--color-primary, #C2185B);
+  font-family: monospace;
+}
+
+.modal-amount-highlight {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid var(--color-primary, #C2185B);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.05rem;
+}
+
+.modal-amount-highlight strong {
+  font-size: 1.3rem;
+  color: var(--color-primary, #C2185B);
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  background: #FFFFFF;
+  border-top: 1px solid rgba(211, 84, 0, 0.15);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-close-simple {
+  padding: 8px 20px;
+  border-radius: var(--radius-pill, 9999px);
+  background: var(--bg-cream-warm, #FAF2E6);
+  border: 1px solid rgba(211, 84, 0, 0.25);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Toast */
+.toast-notification {
+  position: fixed;
+  top: 90px;
+  right: 24px;
+  background: #C2185B;
+  color: #FFFFFF;
+  padding: 12px 20px;
+  border-radius: var(--radius-pill, 9999px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  z-index: 3000;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .kpi-store-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .kpi-store-grid {
+    grid-template-columns: 1fr;
+  }
+  .facturacion-title {
+    font-size: 2.1rem;
+  }
+}

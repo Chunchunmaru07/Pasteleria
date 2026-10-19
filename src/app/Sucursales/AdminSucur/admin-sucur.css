@@ -1,0 +1,820 @@
+/* ==========================================================================
+   SUCURSALES DURANGO - MODO ADMINISTRADOR (INSPECCIÓN MULTI-SUCURSAL & STOCK)
+   ========================================================================== */
+
+.sucursales-page-wrapper {
+  min-height: calc(100vh - 80px);
+  background-color: var(--bg-cream);
+  padding-bottom: 50px;
+}
+
+/* --------------------------------------------------------------------------
+   BARRA DE ROLES
+   -------------------------------------------------------------------------- */
+.role-selector-bar {
+  background: var(--bg-surface);
+  border-bottom: 1px solid rgba(211, 84, 0, 0.15);
+  box-shadow: var(--shadow-sm);
+  padding: 12px 24px;
+}
+
+.role-selector-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.role-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.role-tag.admin-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: #E8F8F5;
+  color: var(--color-green-agave);
+}
+
+.role-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.role-switcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.switch-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-chocolate);
+  background: var(--bg-cream);
+  border: 1px solid rgba(211, 84, 0, 0.2);
+  transition: all var(--transition-fast);
+}
+
+.role-pill:hover {
+  background: #E8F8F5;
+  color: var(--color-green-agave);
+  border-color: var(--color-green-agave);
+}
+
+.role-pill.active {
+  background: var(--color-green-agave);
+  color: var(--text-white);
+  border-color: var(--color-green-agave);
+  box-shadow: 0 4px 12px rgba(17, 122, 101, 0.35);
+}
+
+/* --------------------------------------------------------------------------
+   MÉTRICAS GLOBALES
+   -------------------------------------------------------------------------- */
+.sucursales-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: 1.5px solid rgba(211, 84, 0, 0.16);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: transform var(--transition-fast);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-card.has-alerts {
+  border-color: #E74C3C;
+  background: #FDEDEC;
+}
+
+.stat-icon {
+  font-size: 2.2rem;
+  padding: 10px;
+  border-radius: 14px;
+}
+
+.stat-icon.sales {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.stat-icon.orders {
+  background: #FEF5E7;
+  color: #D35400;
+}
+
+.stat-icon.alert {
+  background: #FADBD8;
+  color: #C0392B;
+}
+
+.stat-icon.branches {
+  background: #E8F8F5;
+  color: var(--color-green-agave);
+}
+
+.stat-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.stat-val {
+  font-family: var(--font-serif);
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--text-espresso);
+}
+
+.stat-sub {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   PESTAÑAS DE NAVEGACIÓN ADMIN
+   -------------------------------------------------------------------------- */
+.admin-tabs-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  background: var(--bg-surface);
+  padding: 8px 12px;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid rgba(211, 84, 0, 0.16);
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-chocolate);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.admin-tab-btn .material-symbols-outlined {
+  font-size: 1.15rem;
+}
+
+.admin-tab-btn:hover {
+  background: #E8F8F5;
+  color: var(--color-green-agave);
+}
+
+.admin-tab-btn.active {
+  background: var(--color-green-agave);
+  color: var(--text-white);
+  box-shadow: 0 4px 12px rgba(17, 122, 101, 0.35);
+}
+
+/* --------------------------------------------------------------------------
+   PESTAÑA 1: INSPECTOR DE OTRAS PASTELERÍAS (INVENTARIO)
+   -------------------------------------------------------------------------- */
+.admin-tab-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.branch-inspector-toolbar {
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: 1.5px solid rgba(211, 84, 0, 0.16);
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.toolbar-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text-espresso);
+  text-transform: uppercase;
+}
+
+.branch-selector-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.branch-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: var(--bg-cream);
+  color: var(--text-chocolate);
+  border: 1.5px solid rgba(211, 84, 0, 0.2);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.branch-pill-btn:hover {
+  border-color: var(--color-green-agave);
+  color: var(--color-green-agave);
+}
+
+.branch-pill-btn.active {
+  background: var(--color-green-agave);
+  color: var(--text-white);
+  border-color: var(--color-green-agave);
+  box-shadow: 0 2px 8px rgba(17, 122, 101, 0.3);
+}
+
+.pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #888;
+}
+
+.pill-dot.open {
+  background: #2E7D32;
+}
+
+.badge-mini-alert {
+  font-size: 0.65rem;
+  background: #FADBD8;
+  color: #C0392B;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  font-weight: 800;
+}
+
+.btn-toggle-branch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1.5px solid #2E7D32;
+  background: #E8F5E9;
+  color: #2E7D32;
+  transition: all var(--transition-fast);
+}
+
+.btn-toggle-branch:not(.open) {
+  border-color: #C0392B;
+  background: #FDEDEC;
+  color: #C0392B;
+}
+
+/* Ficha de la Sucursal */
+.inspected-branch-overview {
+  background: #FAF3EC;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(211, 84, 0, 0.16);
+  padding: 14px 20px;
+}
+
+.overview-title {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-espresso);
+  margin: 0;
+}
+
+.overview-address {
+  font-size: 0.84rem;
+  color: var(--text-chocolate);
+  margin: 4px 0 10px 0;
+}
+
+.overview-meta-tags {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.meta-tag {
+  font-size: 0.78rem;
+  background: var(--bg-surface);
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(211, 84, 0, 0.15);
+  color: var(--text-espresso);
+}
+
+/* Tabla de Inventario */
+.inventory-table-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: 1.5px solid rgba(211, 84, 0, 0.18);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.table-header-title {
+  padding: 16px 20px;
+  background: #FAF3EC;
+  border-bottom: 1px solid rgba(211, 84, 0, 0.12);
+}
+
+.table-header-title h3 {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-espresso);
+  margin: 0;
+}
+
+.table-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.inventory-table th {
+  background: #FFFDF9;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 800;
+  color: var(--text-espresso);
+  border-bottom: 1.5px solid rgba(211, 84, 0, 0.14);
+}
+
+.inventory-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(211, 84, 0, 0.08);
+  color: var(--text-chocolate);
+}
+
+.inventory-table tr.row-critical {
+  background: #FEF9E7;
+}
+
+.col-product {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prod-name {
+  font-weight: 700;
+  color: var(--text-espresso);
+}
+
+.cat-pill {
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-cream-warm);
+}
+
+.stock-number {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--text-espresso);
+}
+
+.stock-number.low {
+  color: #C0392B;
+}
+
+.status-pill {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+}
+
+.status-pill.optimo { background: #E8F8F5; color: #117A65; }
+.status-pill.bajo { background: #FEF5E7; color: #D35400; }
+.status-pill.agotado { background: #FDEDEC; color: #C0392B; }
+
+.quick-stock-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-stock-dec,
+.btn-stock-inc,
+.btn-stock-plus5 {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid rgba(211, 84, 0, 0.25);
+  background: var(--bg-cream);
+  font-weight: 800;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-stock-plus5 {
+  width: auto;
+  padding: 0 8px;
+  font-size: 0.74rem;
+}
+
+.btn-stock-dec:hover,
+.btn-stock-inc:hover,
+.btn-stock-plus5:hover {
+  background: var(--color-green-agave);
+  color: var(--text-white);
+  border-color: var(--color-green-agave);
+}
+
+/* --------------------------------------------------------------------------
+   PESTAÑA 2: TRASPASOS DE STOCK
+   -------------------------------------------------------------------------- */
+.transfer-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid rgba(211, 84, 0, 0.18);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.transfer-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.transfer-icon {
+  font-size: 2.2rem;
+  color: var(--color-green-agave);
+  background: #E8F8F5;
+  padding: 10px;
+  border-radius: 14px;
+}
+
+.transfer-title {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text-espresso);
+  margin: 0;
+}
+
+.transfer-desc {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  margin: 4px 0 0 0;
+  max-width: 780px;
+}
+
+.transfer-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .transfer-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-espresso);
+}
+
+.admin-select,
+.admin-input {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid rgba(211, 84, 0, 0.22);
+  background: #FFFFFF;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.hint-text {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.transfer-action-row {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(211, 84, 0, 0.15);
+}
+
+.btn-execute-transfer {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-green-agave);
+  color: var(--text-white);
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--radius-pill);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(17, 122, 101, 0.35);
+  transition: all var(--transition-fast);
+}
+
+.btn-execute-transfer:hover:not(:disabled) {
+  background: #0E6251;
+  transform: translateY(-1px);
+}
+
+.btn-execute-transfer:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   PESTAÑA 3: CHAT ADMIN & COMUNICADOS
+   -------------------------------------------------------------------------- */
+.admin-chat-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-announcement-box {
+  background: #FFFDF9;
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow-sm);
+}
+
+.announcement-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ann-icon {
+  font-size: 1.5rem;
+  color: var(--color-primary);
+}
+
+.announcement-header h3 {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-espresso);
+  margin: 0;
+}
+
+.ann-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.ann-input-row {
+  display: flex;
+  gap: 10px;
+}
+
+.ann-input-row input {
+  flex: 1;
+}
+
+.btn-publish-ann {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-primary);
+  color: var(--text-white);
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-chat-feed {
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: 1.5px solid rgba(211, 84, 0, 0.16);
+  padding: 16px 20px;
+}
+
+.feed-title {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-espresso);
+  margin: 0 0 12px 0;
+}
+
+.feed-stream {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.feed-msg-card {
+  padding: 10px 14px;
+  background: #FFFDF9;
+  border-radius: 12px;
+  border: 1px solid rgba(211, 84, 0, 0.15);
+}
+
+.feed-msg-card.is-admin {
+  background: #FCE4EC;
+  border-color: var(--color-primary);
+}
+
+.msg-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.74rem;
+  margin-bottom: 4px;
+}
+
+.msg-author {
+  font-weight: 700;
+  color: var(--text-espresso);
+}
+
+.msg-branch {
+  color: var(--color-accent);
+}
+
+.msg-time {
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.msg-text {
+  font-size: 0.84rem;
+  color: var(--text-espresso);
+}
+
+/* --------------------------------------------------------------------------
+   PESTAÑA 4: MAPA ADMIN
+   -------------------------------------------------------------------------- */
+.admin-map-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid rgba(211, 84, 0, 0.18);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-map-header {
+  padding: 16px 20px;
+  background: #FAF3EC;
+  border-bottom: 1px solid rgba(211, 84, 0, 0.12);
+}
+
+.map-title {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-espresso);
+  margin: 0;
+}
+
+.map-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.durango-admin-map {
+  width: 100%;
+  height: 520px;
+}
+
+/* Toast */
+.admin-toast-notification {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #117A65;
+  color: #FFFFFF;
+  padding: 12px 22px;
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-size: 0.88rem;
+  z-index: 9999;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  animation: slideIn 0.25s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

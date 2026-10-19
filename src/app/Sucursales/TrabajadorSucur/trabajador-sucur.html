@@ -1,0 +1,353 @@
+<div class="sucursales-page-wrapper">
+  <!-- Barra de Conmutación de Roles -->
+  <div class="role-selector-bar">
+    <div class="role-selector-container">
+      <div class="role-info">
+        <span class="role-tag worker-tag">
+          <span class="material-symbols-outlined">badge</span> Modo Trabajador
+        </span>
+        <span class="role-desc">
+          Canal operativo inter-sucursales de Durango: traspaso de inventario, pedidos urgentes y coordinación.
+        </span>
+      </div>
+      <div class="role-switcher">
+        <span class="switch-label">Cambiar de vista:</span>
+        <a routerLink="/sucursales/cliente" class="role-pill">
+          <span class="material-symbols-outlined">storefront</span> Sucursales (Cliente)
+        </a>
+        <a routerLink="/sucursales/trabajador" class="role-pill active">
+          <span class="material-symbols-outlined">forum</span> Chat Inter-Sucursales (Trabajador)
+        </a>
+        <a routerLink="/sucursales/admin" class="role-pill">
+          <span class="material-symbols-outlined">admin_panel_settings</span> Gestión & Stock (Admin)
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="sucursales-container">
+    <!-- Encabezado de Trabajador -->
+    <header class="worker-header-card">
+      <div class="worker-identity-group">
+        <span class="worker-avatar-large">{{ sucursalesService.empleadoActivo().avatar }}</span>
+        <div class="worker-details">
+          <div class="id-row">
+            <span class="badge-emp-id">{{ sucursalesService.empleadoActivo().id }}</span>
+            <span class="badge-branch-name">
+              <span class="material-symbols-outlined">store</span>
+              {{ sucursalesService.empleadoActivo().sucursalNombre }}
+            </span>
+          </div>
+          <h2 class="worker-name">{{ sucursalesService.empleadoActivo().nombre }}</h2>
+          <span class="worker-role">{{ sucursalesService.empleadoActivo().rol }} • En Turno Activo</span>
+        </div>
+      </div>
+
+      <div class="worker-header-actions">
+        <button type="button" class="btn-change-profile" (click)="modalCambiarPerfil.set(true)">
+          <span class="material-symbols-outlined">switch_account</span>
+          <span>Cambiar de Empleado / ID</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Grid Principal: Chat General (60%) + Mapa de Durango (40%) -->
+    <div class="worker-main-grid">
+      <!-- ============================================================= -->
+      <!-- COLUMNA IZQUIERDA: CHAT GENERAL INTER-SUCURSALES -->
+      <!-- ============================================================= -->
+      <section class="chat-section-card" aria-label="Chat Inter-Sucursales">
+        <!-- Cabecera del Chat con Filtros -->
+        <div class="chat-header-bar">
+          <div class="chat-title-group">
+            <span class="material-symbols-outlined chat-header-icon">forum</span>
+            <div>
+              <h3 class="chat-main-title">Chat General de Sucursales Durango</h3>
+              <span class="chat-sub">Red interna en tiempo real entre panaderos, cajeras y encargados</span>
+            </div>
+          </div>
+
+          <!-- Filtro de Mensajes -->
+          <div class="chat-filters">
+            <button
+              type="button"
+              class="chat-filter-pill"
+              [class.active]="filtroChat() === 'todos'"
+              (click)="filtroChat.set('todos')"
+            >
+              Todos ({{ sucursalesService.chatMensajes().length }})
+            </button>
+            <button
+              type="button"
+              class="chat-filter-pill alert-filter"
+              [class.active]="filtroChat() === 'alerta_stock'"
+              (click)="filtroChat.set('alerta_stock')"
+            >
+              ⚠️ Stock Bajo
+            </button>
+            <button
+              type="button"
+              class="chat-filter-pill urgent-filter"
+              [class.active]="filtroChat() === 'pedido_urgente'"
+              (click)="filtroChat.set('pedido_urgente')"
+            >
+              🚨 Pedidos Urgentes
+            </button>
+            <button
+              type="button"
+              class="chat-filter-pill admin-filter"
+              [class.active]="filtroChat() === 'aviso_admin'"
+              (click)="filtroChat.set('aviso_admin')"
+            >
+              📌 Avisos Admin
+            </button>
+          </div>
+        </div>
+
+        <!-- Flujo de Mensajes Scrolleable -->
+        <div #chatScrollContainer class="chat-messages-stream">
+          @for (msg of mensajesFiltrados(); track msg.id) {
+            <div
+              class="chat-message-bubble"
+              [class.is-mine]="msg.empleadoId === sucursalesService.empleadoActivo().id"
+              [class.type-alert]="msg.tipo === 'alerta_stock'"
+              [class.type-urgent]="msg.tipo === 'pedido_urgente'"
+              [class.type-admin]="msg.tipo === 'aviso_admin'"
+            >
+              <!-- Cabecera del Mensaje -->
+              <div class="msg-author-header">
+                <span class="msg-avatar">{{ msg.avatar }}</span>
+                <span class="msg-author-name">{{ msg.empleadoNombre }}</span>
+                <span class="msg-emp-id-badge">{{ msg.empleadoId }}</span>
+                <span class="msg-branch-badge">📍 {{ msg.sucursalNombre }}</span>
+                <span class="msg-time">{{ msg.fechaHora }}</span>
+              </div>
+
+              <!-- Tipo de Aviso -->
+              @if (msg.tipo === 'alerta_stock') {
+                <div class="msg-type-indicator alert">
+                  <span class="material-symbols-outlined">warning</span>
+                  <span>SOLICITUD DE STOCK / TRASPASO</span>
+                </div>
+              } @else if (msg.tipo === 'pedido_urgente') {
+                <div class="msg-type-indicator urgent">
+                  <span class="material-symbols-outlined">bolt</span>
+                  <span>PEDIDO URGENTE / PRODUCCIÓN</span>
+                </div>
+              } @else if (msg.tipo === 'aviso_admin') {
+                <div class="msg-type-indicator admin">
+                  <span class="material-symbols-outlined">campaign</span>
+                  <span>COMUNICADO OFICIAL DE DIRECCIÓN</span>
+                </div>
+              }
+
+              <!-- Cuerpo del Mensaje -->
+              <div class="msg-body-text">
+                {{ msg.texto }}
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Barra Inferior de Entrada de Mensaje -->
+        <div class="chat-input-toolbar">
+          <!-- Selector de Tipo de Mensaje -->
+          <div class="msg-type-selector">
+            <span class="type-sel-label">Tipo:</span>
+            <button
+              type="button"
+              class="type-pill"
+              [class.active]="tipoMensaje() === 'normal'"
+              (click)="tipoMensaje.set('normal')"
+            >
+              💬 Mensaje Normal
+            </button>
+            <button
+              type="button"
+              class="type-pill alert-pill"
+              [class.active]="tipoMensaje() === 'alerta_stock'"
+              (click)="tipoMensaje.set('alerta_stock')"
+            >
+              ⚠️ Alerta Stock
+            </button>
+            <button
+              type="button"
+              class="type-pill urgent-pill"
+              [class.active]="tipoMensaje() === 'pedido_urgente'"
+              (click)="tipoMensaje.set('pedido_urgente')"
+            >
+              🚨 Pedido Urgente
+            </button>
+          </div>
+
+          <div class="msg-input-row">
+            <input
+              type="text"
+              placeholder="Escribe un mensaje para todas las sucursales de Durango..."
+              [ngModel]="nuevoMensajeTexto()"
+              (ngModelChange)="nuevoMensajeTexto.set($event)"
+              (keyup.enter)="enviarMensaje()"
+              class="chat-text-input"
+            />
+            <button type="button" class="btn-send-msg" (click)="enviarMensaje()">
+              <span class="material-symbols-outlined">send</span>
+              <span>Enviar</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================= -->
+      <!-- COLUMNA DERECHA: MAPA OPERATIVO & RED DE SUCURSALES -->
+      <!-- ============================================================= -->
+      <aside class="worker-sidebar-col" aria-label="Mapa Operativo de Durango">
+        <div class="worker-map-card">
+          <div class="worker-map-header">
+            <span class="material-symbols-outlined">map</span>
+            <h3 class="worker-map-title">Mapa de Durango & Cobertura</h3>
+          </div>
+
+          <!-- Mapa Leaflet -->
+          <div #mapContainer class="durango-worker-map"></div>
+
+          <!-- Sucursales en Turno -->
+          <div class="branches-status-summary">
+            <span class="summary-label">Pastelerías Activas en Durango ({{ sucursalesService.sucursales().length }}):</span>
+            <div class="status-items-list">
+              @for (suc of sucursalesService.sucursales(); track suc.id) {
+                <div
+                  class="worker-branch-chip"
+                  [class.active]="suc.id === sucursalesService.sucursalSeleccionadaId()"
+                  (click)="seleccionarSucursal(suc)"
+                >
+                  <div class="chip-dot" [class.open]="suc.abierto"></div>
+                  <div class="chip-info">
+                    <span class="chip-name">{{ suc.nombre }}</span>
+                    <span class="chip-encargado">Encargado: {{ suc.encargado }} ({{ suc.encargadoId }})</span>
+                  </div>
+                  <span class="chip-orders">
+                    {{ suc.pedidosActivos }} pedidos
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL: CAMBIAR PERFIL DE EMPLEADO -->
+  <!-- ================================================================= -->
+  @if (modalCambiarPerfil()) {
+    <div class="modal-backdrop" (click)="modalCambiarPerfil.set(false)">
+      <div class="modal-card profile-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="material-symbols-outlined modal-icon">badge</span>
+            <h2>Seleccionar Perfil de Empleado</h2>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="modalCambiarPerfil.set(false)">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <p class="modal-intro">
+            Elige uno de los colaboradores registrados en las sucursales de Durango o crea tu propio ID:
+          </p>
+
+          <!-- Lista de empleados predefinidos -->
+          <h4 class="sub-heading">Colaboradores en Turno:</h4>
+          <div class="employees-grid">
+            @for (emp of sucursalesService.todosLosEmpleados(); track emp.id) {
+              <button
+                type="button"
+                class="employee-pick-card"
+                [class.selected]="emp.id === sucursalesService.empleadoActivo().id"
+                (click)="seleccionarEmpleadoPreset(emp)"
+              >
+                <span class="emp-avatar">{{ emp.avatar }}</span>
+                <div class="emp-meta">
+                  <div class="emp-id-tag">{{ emp.id }}</div>
+                  <div class="emp-name">{{ emp.nombre }}</div>
+                  <div class="emp-branch">{{ emp.sucursalNombre }}</div>
+                </div>
+              </button>
+            }
+          </div>
+
+          <div class="modal-divider"></div>
+
+          <!-- Formulario de ID personalizado -->
+          <h4 class="sub-heading">O escribe tu ID y Sucursal personalizados:</h4>
+          <div class="custom-emp-form">
+            <div class="form-row">
+              <div class="form-field">
+                <label for="customIdInput">ID de Empleado:</label>
+                <input
+                  id="customIdInput"
+                  type="text"
+                  placeholder="Ej: EMP-077"
+                  [ngModel]="formCustomId()"
+                  (ngModelChange)="formCustomId.set($event)"
+                  class="text-input"
+                />
+              </div>
+
+              <div class="form-field">
+                <label for="customNombreInput">Nombre Completo:</label>
+                <input
+                  id="customNombreInput"
+                  type="text"
+                  placeholder="Ej: Valeria Morales"
+                  [ngModel]="formCustomNombre()"
+                  (ngModelChange)="formCustomNombre.set($event)"
+                  class="text-input"
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <label for="customRolInput">Puesto / Rol:</label>
+                <input
+                  id="customRolInput"
+                  type="text"
+                  placeholder="Ej: Maestro Pastelero"
+                  [ngModel]="formCustomRol()"
+                  (ngModelChange)="formCustomRol.set($event)"
+                  class="text-input"
+                />
+              </div>
+
+              <div class="form-field">
+                <label for="customSucursalSelect">Sucursal de Durango:</label>
+                <select
+                  id="customSucursalSelect"
+                  [ngModel]="formCustomSucursalId()"
+                  (ngModelChange)="formCustomSucursalId.set($event)"
+                  class="select-input"
+                >
+                  @for (s of sucursalesService.sucursales(); track s.id) {
+                    <option [value]="s.id">{{ s.nombre }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <button type="button" class="btn-save-custom-emp" (click)="guardarPerfilPersonalizado()">
+              <span class="material-symbols-outlined">how_to_reg</span>
+              <span>Guardar y Entrar como este Empleado</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-primary" (click)="modalCambiarPerfil.set(false)">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

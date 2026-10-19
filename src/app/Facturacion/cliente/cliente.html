@@ -1,0 +1,332 @@
+<div class="facturacion-wrapper">
+  <!-- Barra de Conmutación de Roles -->
+  <div class="role-selector-bar">
+    <div class="role-selector-container">
+      <div class="role-info">
+        <span class="role-tag client-tag">
+          <span class="material-symbols-outlined">person</span> Modo Cliente
+        </span>
+        <span class="role-desc">Genera tu factura electrónica (CFDI 4.0 SAT) a partir de tu ticket de compra.</span>
+      </div>
+      <div class="role-switcher">
+        <span class="switch-label">Cambiar de vista:</span>
+        <a routerLink="/facturacion/cliente" class="role-pill active">
+          <span class="material-symbols-outlined">receipt_long</span> Facturar Compra
+        </a>
+        <a routerLink="/facturacion/trabajador" class="role-pill">
+          <span class="material-symbols-outlined">badge</span> Mis Ventas (Trabajador)
+        </a>
+        <a routerLink="/facturacion/admin" class="role-pill">
+          <span class="material-symbols-outlined">query_stats</span> Ventas Totales (Admin)
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="facturacion-container">
+    <!-- Encabezado de Facturación para Clientes -->
+    <header class="facturacion-header">
+      <span class="handwritten-tag">Comprobantes Fiscales Digitales</span>
+      <h1 class="facturacion-title">Portal de Facturación Electrónica</h1>
+      <p class="facturacion-subtitle">
+        Emite tu factura CFDI versión 4.0 ingresando los datos de tu ticket de compra en <strong>Olenka Y Ezis</strong>. 
+        Tienes hasta el último día del mes en curso para generar tu comprobante fiscal.
+      </p>
+    </header>
+
+    <div class="facturacion-grid">
+      <!-- Columna Izquierda: Búsqueda de Ticket y Datos Fiscales -->
+      <section class="invoice-form-section">
+        <!-- Paso 1: Ingresar Ticket -->
+        <div class="card-step">
+          <div class="step-header">
+            <span class="step-num">1</span>
+            <div>
+              <h3>Buscar Ticket de Compra</h3>
+              <p>Ingresa el número de folio impreso al pie de tu recibo de caja.</p>
+            </div>
+          </div>
+
+          <div class="ticket-search-box">
+            <div class="input-with-button">
+              <span class="material-symbols-outlined icon">confirmation_number</span>
+              <input 
+                type="text" 
+                placeholder="Ej. TK-1089" 
+                [ngModel]="folioTicketInput()" 
+                (ngModelChange)="folioTicketInput.set($event)"
+                class="ticket-input"
+              />
+              <button type="button" class="btn-search-ticket" (click)="buscarTicket()">
+                <span class="material-symbols-outlined">search</span>
+                <span>Buscar</span>
+              </button>
+            </div>
+
+            <!-- Ejemplos rápidos para probar con un clic -->
+            <div class="quick-tickets">
+              <span class="quick-label">Tickets de prueba disponibles:</span>
+              <button type="button" class="btn-quick-folio" (click)="seleccionarTicketEjemplo('TK-1089')">TK-1089 ($568)</button>
+              <button type="button" class="btn-quick-folio" (click)="seleccionarTicketEjemplo('TK-1091')">TK-1091 ($280)</button>
+              <button type="button" class="btn-quick-folio" (click)="seleccionarTicketEjemplo('TK-1076')">TK-1076 ($1,270)</button>
+            </div>
+          </div>
+
+          <!-- Información del Ticket Encontrado -->
+          @if (ticketSeleccionado()) {
+            <div class="ticket-preview-box">
+              <div class="ticket-preview-header">
+                <span class="ticket-folio">Folio: <b>{{ ticketSeleccionado()?.folio }}</b></span>
+                <span class="ticket-date">{{ ticketSeleccionado()?.fecha | date:'dd/MM/yyyy, hh:mm a' }}</span>
+                <span class="ticket-badge" [class.facturado]="ticketSeleccionado()?.facturado">
+                  {{ ticketSeleccionado()?.facturado ? 'Ya Facturado' : 'Listo para Facturar' }}
+                </span>
+              </div>
+
+              <div class="ticket-items-list">
+                @for (item of ticketSeleccionado()?.items; track item.nombre) {
+                  <div class="ticket-item-row">
+                    <span>{{ item.cantidad }}x {{ item.nombre }}</span>
+                    <strong>${{ item.importe }}</strong>
+                  </div>
+                }
+              </div>
+
+              <div class="ticket-totals-row">
+                <div>Subtotal: ${{ ticketSeleccionado()?.subtotal }} | IVA (16%): ${{ ticketSeleccionado()?.iva }}</div>
+                <div class="ticket-grand-total">Total: ${{ ticketSeleccionado()?.total }} MXN</div>
+              </div>
+            </div>
+          }
+
+          @if (errorFeedback()) {
+            <div class="alert-box error">
+              <span class="material-symbols-outlined">error</span>
+              <span>{{ errorFeedback() }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Paso 2: Datos Fiscales del Receptor -->
+        <div class="card-step" [class.disabled-step]="!ticketSeleccionado()">
+          <div class="step-header">
+            <span class="step-num">2</span>
+            <div>
+              <h3>Datos Fiscales del Cliente (SAT CFDI 4.0)</h3>
+              <p>Captura los datos exactamente como aparecen en tu Constancia de Situación Fiscal.</p>
+            </div>
+          </div>
+
+          <div class="fiscal-form">
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="rfcCliente">RFC con Homoclave *</label>
+                <input 
+                  id="rfcCliente"
+                  type="text" 
+                  maxlength="13" 
+                  placeholder="XAXX010101000" 
+                  [ngModel]="datosFiscales().rfc"
+                  (ngModelChange)="datosFiscales().rfc = $event.toUpperCase()"
+                  class="form-input text-uppercase"
+                />
+              </div>
+
+              <div class="form-group flex-1">
+                <label for="cpCliente">Código Postal Fiscal *</label>
+                <input 
+                  id="cpCliente"
+                  type="text" 
+                  maxlength="5" 
+                  placeholder="06700" 
+                  [ngModel]="datosFiscales().codigoPostal"
+                  (ngModelChange)="datosFiscales().codigoPostal = $event"
+                  class="form-input"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="razonSocial">Nombre o Razón Social (Sin régimen societario) *</label>
+              <input 
+                id="razonSocial"
+                type="text" 
+                placeholder="LUCÍA MONROY PÉREZ" 
+                [ngModel]="datosFiscales().razonSocial"
+                (ngModelChange)="datosFiscales().razonSocial = $event.toUpperCase()"
+                class="form-input text-uppercase"
+              />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="regimenFiscal">Régimen Fiscal *</label>
+                <select 
+                  id="regimenFiscal" 
+                  [ngModel]="datosFiscales().regimenFiscal"
+                  (ngModelChange)="datosFiscales().regimenFiscal = $event"
+                  class="form-select"
+                >
+                  @for (reg of regimenesFiscales; track reg) {
+                    <option [value]="reg">{{ reg }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="form-group flex-1">
+                <label for="usoCFDI">Uso de CFDI *</label>
+                <select 
+                  id="usoCFDI" 
+                  [ngModel]="datosFiscales().usoCFDI"
+                  (ngModelChange)="datosFiscales().usoCFDI = $event"
+                  class="form-select"
+                >
+                  @for (uso of usosCFDI; track uso) {
+                    <option [value]="uso">{{ uso }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="correoCliente">Correo Electrónico para Envío de Factura *</label>
+              <input 
+                id="correoCliente"
+                type="email" 
+                placeholder="tu.correo@ejemplo.com" 
+                [ngModel]="datosFiscales().correo"
+                (ngModelChange)="datosFiscales().correo = $event"
+                class="form-input"
+              />
+            </div>
+
+            <button 
+              type="button" 
+              class="btn-generate-invoice" 
+              [disabled]="!ticketSeleccionado() || ticketSeleccionado()?.facturado"
+              (click)="generarFactura()"
+            >
+              <span class="material-symbols-outlined">receipt</span>
+              <span>Generar Factura Electrónica CFDI 4.0</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Columna Derecha: Vista Previa y Descarga de Factura -->
+      <section class="invoice-preview-section">
+        @if (facturaGenerada()) {
+          <div class="cfdi-paper-card">
+            <div class="paper-watermark">CFDI 4.0 VÁLIDO</div>
+
+            <header class="cfdi-header">
+              <div class="cfdi-brand">
+                <span class="material-symbols-outlined brand-icon">cake</span>
+                <div>
+                  <h4>OLENKA Y EZIS</h4>
+                  <p>PASTELERÍA & REPOSTERÍA MEXICANA S.A. DE C.V.</p>
+                  <span>RFC: OYE180915TR3 · Régimen: 601 General de Ley</span>
+                </div>
+              </div>
+              <div class="cfdi-meta">
+                <span class="invoice-number">FACTURA: {{ facturaGenerada()?.folioFactura }}</span>
+                <span class="invoice-sat-date">Emisión: {{ facturaGenerada()?.fechaEmision | date:'dd/MM/yyyy HH:mm:ss' }}</span>
+                <span class="invoice-badge-sat">TIMBRADO SAT</span>
+              </div>
+            </header>
+
+            <div class="cfdi-receptor-block">
+              <h5>DATOS DEL RECEPTOR (CLIENTE)</h5>
+              <div class="receptor-details">
+                <div><strong>RFC:</strong> {{ facturaGenerada()?.rfcReceptor }}</div>
+                <div><strong>Razón Social:</strong> {{ facturaGenerada()?.razonSocial }}</div>
+                <div><strong>C.P. Fiscal:</strong> {{ facturaGenerada()?.codigoPostal }}</div>
+                <div><strong>Régimen:</strong> {{ facturaGenerada()?.regimenFiscal }}</div>
+                <div><strong>Uso CFDI:</strong> {{ facturaGenerada()?.usoCFDI }}</div>
+              </div>
+            </div>
+
+            <div class="cfdi-concepts-block">
+              <h5>CONCEPTOS / PRODUCTOS DE REPOSTERÍA</h5>
+              <table class="cfdi-table">
+                <thead>
+                  <tr>
+                    <th>Cant.</th>
+                    <th>Descripción</th>
+                    <th>P. Unitario</th>
+                    <th>Importe</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (it of facturaGenerada()?.items; track it.nombre) {
+                    <tr>
+                      <td>{{ it.cantidad }}</td>
+                      <td>{{ it.nombre }}</td>
+                      <td>${{ it.precioUnitario }}</td>
+                      <td>${{ it.importe }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <div class="cfdi-totals-block">
+              <div class="cfdi-fiscal-qr">
+                <div class="qr-placeholder">
+                  <span class="material-symbols-outlined">qr_code_2</span>
+                  <span>Verificar en SAT</span>
+                </div>
+                <div class="uuid-text">
+                  <strong>Folio Fiscal (UUID):</strong>
+                  <code>{{ facturaGenerada()?.uuidSAT }}</code>
+                </div>
+              </div>
+
+              <div class="cfdi-amounts">
+                <div class="amount-row">
+                  <span>Subtotal:</span>
+                  <strong>${{ facturaGenerada()?.subtotal }} MXN</strong>
+                </div>
+                <div class="amount-row">
+                  <span>IVA Trasladado (16%):</span>
+                  <strong>${{ facturaGenerada()?.iva }} MXN</strong>
+                </div>
+                <div class="amount-row grand-total">
+                  <span>Total:</span>
+                  <span class="price-val">${{ facturaGenerada()?.total }} MXN</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Acciones de Descarga y Envío -->
+            <footer class="cfdi-footer-actions">
+              <button type="button" class="btn-download pdf" (click)="descargarArchivo('PDF')">
+                <span class="material-symbols-outlined">picture_as_pdf</span>
+                <span>Descargar PDF</span>
+              </button>
+              <button type="button" class="btn-download xml" (click)="descargarArchivo('XML')">
+                <span class="material-symbols-outlined">code</span>
+                <span>Descargar XML</span>
+              </button>
+              <button type="button" class="btn-download email" (click)="reenviarCorreo()">
+                <span class="material-symbols-outlined">mail</span>
+                <span>Reenviar a Correo</span>
+              </button>
+            </footer>
+          </div>
+        } @else {
+          <!-- Estado Inicial sin Factura Generada -->
+          <div class="no-invoice-box">
+            <span class="material-symbols-outlined icon">receipt</span>
+            <h3>Vista Previa de Comprobante Fiscal</h3>
+            <p>Ingresa tu folio de ticket y datos fiscales en el formulario para generar y descargar tu factura digital con validez fiscal del SAT.</p>
+            <div class="sat-compliance-pill">
+              <span class="material-symbols-outlined">verified</span>
+              <span>Cumple con las disposiciones fiscales CFDI versión 4.0</span>
+            </div>
+          </div>
+        }
+      </section>
+    </div>
+  </div>
+</div>

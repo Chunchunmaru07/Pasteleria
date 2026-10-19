@@ -1,0 +1,87 @@
+<!-- Barra superior decorativa de la pastelería -->
+<div class="top-announcement-bar">
+    <div class="announcement-content">
+        <span class="material-symbols-outlined star-icon">auto_awesome</span>
+        <span>Horneo artesanal diario con ingredientes 100% naturales</span>
+        <span class="bullet-separator">✦</span>
+        <span class="highlight">¡Pedidos personalizados con 48 hrs de anticipación!</span>
+        <span class="material-symbols-outlined star-icon">cake</span>
+    </div>
+</div>
+
+<header class="site-header">
+    <div class="header-container">
+        <!-- Logotipo y Nombre de la Pastelería -->
+        <a routerLink="/" class="logo-section" (click)="closeMobileMenu()">
+            <div class="logo-icon-wrapper">
+                <span class="material-symbols-outlined site-icon">cake</span>
+            </div>
+            <div class="logo-text">
+                <h1 class="site-title">Olenka Y Ezis</h1>
+                <span class="site-subtitle">Tradicion en lo dulce </span>
+            </div>
+        </a>
+
+        <!-- Botón Hamburguesa para Móviles -->
+        <button class="mobile-menu-btn" type="button" (click)="toggleMobileMenu()"
+            [attr.aria-expanded]="isMobileMenuOpen()" aria-label="Abrir menú de navegación">
+            <span class="material-symbols-outlined menu-icon">
+                {{ isMobileMenuOpen() ? 'close' : 'menu' }}
+            </span>
+        </button>
+
+        <!-- Navegación Principal -->
+        <nav class="nav-section" [class.mobile-open]="isMobileMenuOpen()">
+            <ul class="nav-links">
+                <li class="nav-item">
+                    <a routerLink="/inicio" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
+                        <span class="material-symbols-outlined link-icon">home</span>
+                        <span>Inicio</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a routerLink="/catalogo" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
+                        <span class="material-symbols-outlined link-icon">bakery_dining</span>
+                        <span>Catálogo</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a routerLink="/disena-tuyo" routerLinkActive="active" class="nav-link custom-cake-link"
+                        (click)="closeMobileMenu()">
+                        <span class="material-symbols-outlined link-icon spark">palette</span>
+                        <span>Diseña el tuyo</span>
+                        <span class="mini-tag">Nuevo</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a routerLink="/facturacion" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
+                        <span class="material-symbols-outlined link-icon">receipt_long</span>
+                        <span>Facturación</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a routerLink="/sucursales" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
+                        <span class="material-symbols-outlined link-icon">storefront</span>
+                        <span>Sucursales</span>
+                    </a>
+                </li>
+
+                <!-- Botones de Acción (Mis Pedidos y Acceso) -->
+                <li class="nav-item nav-action-item">
+                    <a routerLink="/mis-pedidos" routerLinkActive="active" class="nav-link orders-link"
+                        (click)="closeMobileMenu()">
+                        <span class="material-symbols-outlined link-icon">shopping_bag</span>
+                        <span>Mis Pedidos</span>
+                    </a>
+                </li>
+                <li class="nav-item nav-action-item">
+                    <a routerLink="/login" routerLinkActive="active" class="nav-link login-link"
+                        (click)="closeMobileMenu()">
+                        <span class="material-symbols-outlined link-icon">account_circle</span>
+                        <span>Iniciar Sesión / Registro</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</header>

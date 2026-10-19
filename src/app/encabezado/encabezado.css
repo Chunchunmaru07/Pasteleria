@@ -1,0 +1,380 @@
+/* ==========================================================================
+   ENCABEZADO OLENKA Y EZIS - TRADICIÓN EN LO DULCE
+   Estética de Pastelería Tradicional Mexicana
+   Colores: Rosa Mexicano, Cempasúchil, Cajeta, Verde Agave y Chocolate de Metate
+   ========================================================================== */
+
+/* Barra superior decorativa festiva (Estilo Papel Picado / Dulces Típicos) */
+.top-announcement-bar {
+    background: linear-gradient(90deg, #FCE4EC 0%, #FEF5E7 35%, #E8F8F5 70%, #FCE4EC 100%);
+    border-bottom: 1px solid rgba(211, 84, 0, 0.22);
+    padding: 6px 16px;
+    text-align: center;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-chocolate, #4A2E2B);
+    letter-spacing: 0.02em;
+}
+
+.announcement-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    max-width: 1320px;
+    margin: 0 auto;
+}
+
+.announcement-content .star-icon {
+    font-size: 16px;
+    color: var(--color-primary, #C2185B);
+    animation: pulse-mexican 2s infinite ease-in-out;
+}
+
+.announcement-content .bullet-separator {
+    color: var(--color-cempasuchil, #E67E22);
+    font-size: 11px;
+}
+
+.announcement-content .highlight {
+    color: var(--color-primary, #C2185B);
+    font-weight: 700;
+}
+
+@keyframes pulse-mexican {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.85;
+    }
+
+    50% {
+        transform: scale(1.22) rotate(10deg);
+        opacity: 1;
+        color: var(--color-cempasuchil, #E67E22);
+    }
+}
+
+/* Encabezado principal pegajoso (Sticky) con efecto vidrio glaseado cálido */
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(255, 253, 248, 0.95);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1.5px solid rgba(211, 84, 0, 0.20);
+    box-shadow: 0 6px 24px -2px rgba(44, 24, 16, 0.07);
+    transition: all 0.3s ease;
+}
+
+.header-container {
+    max-width: 1360px;
+    margin: 0 auto;
+    padding: 0.75rem 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+/* ==========================================================================
+   Logo de la Pastelería: Olenka Y Ezis
+   ========================================================================== */
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    cursor: pointer;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.logo-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F8BBD0 0%, #FAD7A0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary, #C2185B);
+    box-shadow: 0 4px 14px rgba(194, 24, 91, 0.26), inset 0 2px 2px rgba(255, 255, 255, 0.7);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+
+.site-icon {
+    font-size: 26px;
+    transition: transform 0.4s ease;
+}
+
+.logo-section:hover .logo-icon-wrapper {
+    transform: translateY(-2px) rotate(-8deg) scale(1.06);
+    box-shadow: 0 8px 22px rgba(194, 24, 91, 0.38);
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.site-title {
+    font-family: var(--font-serif, 'Playfair Display', serif);
+    font-size: 1.68rem;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #2C1810 0%, #880E4F 50%, #C2185B 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+}
+
+.site-subtitle {
+    font-family: var(--font-sans, sans-serif);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-accent, #D35400);
+    margin-top: 1px;
+}
+
+/* ==========================================================================
+   Navegación
+   ========================================================================== */
+.nav-section {
+    display: flex;
+    align-items: center;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+}
+
+.nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: var(--radius-pill, 9999px);
+    color: var(--text-chocolate, #4A2E2B);
+    font-family: var(--font-sans, sans-serif);
+    font-size: 0.92rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    white-space: nowrap;
+}
+
+.link-icon {
+    font-size: 19px;
+    color: #9C7D73;
+    transition: color 0.25s ease, transform 0.25s ease;
+}
+
+/* Hover de enlaces estándar con toque Rosa Mexicano */
+.nav-link:hover {
+    color: var(--color-primary, #C2185B);
+    background-color: rgba(194, 24, 91, 0.08);
+}
+
+.nav-link:hover .link-icon {
+    color: var(--color-primary, #C2185B);
+    transform: translateY(-1px);
+}
+
+/* Enlace activo */
+.nav-link.active {
+    color: var(--color-primary, #C2185B);
+    background: var(--color-primary-light, #FCE4EC);
+    font-weight: 700;
+}
+
+.nav-link.active .link-icon {
+    color: var(--color-primary, #C2185B);
+}
+
+/* Mini etiqueta "Nuevo" en Cempasúchil / Cajeta */
+.custom-cake-link {
+    position: relative;
+}
+
+.mini-tag {
+    background: linear-gradient(135deg, #E67E22 0%, #D35400 100%);
+    color: #FFFFFF;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 2px 7px;
+    border-radius: 9999px;
+    box-shadow: 0 2px 6px rgba(211, 84, 0, 0.35);
+    margin-left: 2px;
+}
+
+/* Separador visual antes de los botones de acción */
+.nav-action-item:first-of-type {
+    margin-left: 8px;
+}
+
+/* Botón: Mis Pedidos (Verde Agave Mexicano) */
+.orders-link {
+    border: 1.5px solid rgba(17, 122, 101, 0.35);
+    background: #FFFFFF;
+    color: var(--color-green-agave, #117A65);
+    padding: 8px 16px;
+    box-shadow: 0 2px 8px rgba(44, 24, 16, 0.05);
+}
+
+.orders-link .link-icon {
+    color: var(--color-green-agave, #117A65);
+}
+
+.orders-link:hover {
+    background: var(--color-green-light, #E8F8F5);
+    border-color: var(--color-green-agave, #117A65);
+    color: #0E6251;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(17, 122, 101, 0.22);
+}
+
+/* Botón: Iniciar Sesión / Registro (Rosa Mexicano Intenso) */
+.login-link {
+    background: linear-gradient(135deg, #C2185B 0%, #D81B60 50%, #AD1457 100%);
+    color: #FFFFFF !important;
+    padding: 9px 18px;
+    box-shadow: 0 4px 14px rgba(194, 24, 91, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+.login-link .link-icon {
+    color: #FFFFFF;
+}
+
+.login-link:hover {
+    background: linear-gradient(135deg, #AD1457 0%, #C2185B 60%, #E91E63 100%);
+    transform: translateY(-1.5px);
+    box-shadow: 0 8px 22px rgba(194, 24, 91, 0.48);
+}
+
+/* ==========================================================================
+   Botón Móvil & Responsive
+   ========================================================================== */
+.mobile-menu-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #FFFFFF;
+    border: 1.5px solid rgba(211, 84, 0, 0.28);
+    color: var(--text-espresso, #2C1810);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mobile-menu-btn:hover {
+    background: var(--color-primary-light, #FCE4EC);
+    color: var(--color-primary, #C2185B);
+    border-color: var(--color-primary, #C2185B);
+}
+
+.menu-icon {
+    font-size: 24px;
+}
+
+/* Pantallas Medianas y Móviles */
+@media (max-width: 1100px) {
+    .header-container {
+        padding: 0.75rem 1.25rem;
+    }
+
+    .nav-link {
+        padding: 7px 11px;
+        font-size: 0.88rem;
+    }
+
+    .nav-link span:not(.mini-tag):not(.link-icon) {
+        font-size: 0.88rem;
+    }
+}
+
+@media (max-width: 960px) {
+    .mobile-menu-btn {
+        display: inline-flex;
+    }
+
+    .nav-section {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: rgba(255, 253, 248, 0.98);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 2px solid rgba(194, 24, 91, 0.25);
+        box-shadow: 0 16px 32px rgba(44, 24, 16, 0.14);
+        padding: 1.25rem 1.5rem 1.75rem;
+        display: none;
+        flex-direction: column;
+        animation: slide-down 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .nav-section.mobile-open {
+        display: flex;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        gap: 8px;
+    }
+
+    .nav-link {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-size: 1rem;
+        justify-content: flex-start;
+    }
+
+    .nav-action-item:first-of-type {
+        margin-left: 0;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px dashed rgba(211, 84, 0, 0.25);
+    }
+
+    .orders-link,
+    .login-link {
+        justify-content: center;
+    }
+}
+
+@keyframes slide-down {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
