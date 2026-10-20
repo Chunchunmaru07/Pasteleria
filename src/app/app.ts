@@ -9,6 +9,6 @@ import { Encabezado } from './encabezado/encabezado';
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
-export class App {
+export class AppComponent {
   protected readonly title = signal('Olenka Y Ezis - Tradición en lo Dulce');
 }

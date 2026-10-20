@@ -399,7 +399,7 @@ export class DisenaElTuyo implements AfterViewInit, OnDestroy {
       this.renderer.dispose();
     }
     if (this.audioCtx) {
-      this.audioCtx.close().catch(() => {});
+      this.audioCtx.close().catch(() => { });
     }
   }
 
@@ -1655,7 +1655,7 @@ export class DisenaElTuyo implements AfterViewInit, OnDestroy {
     this.pastelesGuardados.set(actualizados);
     try {
       localStorage.setItem('olenka_ezis_pasteles_disenados', JSON.stringify(actualizados));
-    } catch {}
+    } catch { }
 
     this.playSound('fanfare');
     this.celebrando.set(true);
@@ -1686,7 +1686,7 @@ export class DisenaElTuyo implements AfterViewInit, OnDestroy {
     this.pastelesGuardados.set(filtrados);
     try {
       localStorage.setItem('olenka_ezis_pasteles_disenados', JSON.stringify(filtrados));
-    } catch {}
+    } catch { }
     this.playSound('click');
     this.mostrarToast('Diseño eliminado de tu colección.');
   }
@@ -1705,15 +1705,23 @@ export class DisenaElTuyo implements AfterViewInit, OnDestroy {
       porciones: this.porcionesEstimadas(),
     };
 
-    const creado = this.catalogoService.agregarProducto(nuevoProducto);
-    this.catalogoService.incrementarSeleccion(creado.id);
+    // Al llamar a agregarProducto, nos suscribimos al Observable para recibir el producto guardado en MySQL Aiven
+    this.catalogoService.agregarProducto(nuevoProducto).subscribe({
+      next: (creado) => {
+        // 'creado' ya contiene el objeto Producto con su 'id' generado por el servidor
+        this.catalogoService.incrementarSeleccion(creado.id);
 
-    this.playSound('fanfare');
-    this.celebrando.set(true);
-    setTimeout(() => this.celebrando.set(false), 3500);
-    this.mostrarToast('🎉 ¡Pastel 3D agregado a tu pedido! Puedes revisarlo en Catálogo / Facturación.');
+        this.playSound('fanfare');
+        this.celebrando.set(true);
+        setTimeout(() => this.celebrando.set(false), 3500);
+        this.mostrarToast('🎉 ¡Pastel 3D agregado a tu pedido! Puedes revisarlo en Catálogo / Facturación.');
+      },
+      error: (err) => {
+        alert('Error al guardar el pastel personalizado en la base de datos.');
+        console.error('Error al agregar pastel 3D:', err);
+      }
+    });
   }
-
   mostrarToast(msj: string): void {
     this.toastMensaje.set(msj);
     setTimeout(() => {

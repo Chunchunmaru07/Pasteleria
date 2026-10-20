@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { FacturacionService, VentaTicket } from '../facturacion.service';
+import { FacturacionService, FacturaSAT, VentaTicket } from '../facturacion.service';
 
 @Component({
   selector: 'app-trabajador',
@@ -66,25 +66,39 @@ export class Trabajador {
       return;
     }
 
-    const fac = this.facturacionService.emitirFactura(t, {
+    // Al ser una petición asíncrona a la base de datos, usamos .subscribe()
+    this.facturacionService.emitirFactura(t, {
       rfc: this.rfcCliente(),
       razonSocial: this.razonSocialCliente(),
       codigoPostal: this.cpCliente(),
       regimenFiscal: this.regimenCliente(),
       usoCFDI: this.usoCliente(),
       correo: this.correoCliente(),
+    }).subscribe({
+      next: (fac: FacturaSAT) => {
+        this.mostrarToast(`✓ Factura ${fac.folioFactura} generada y enviada a ${fac.correo}`);
+        this.buscarTicketMostrador();
+      },
+      error: (err) => {
+        alert('Error al generar la factura en el servidor.');
+        console.error(err);
+      }
     });
-
-    this.mostrarToast(`✓ Factura ${fac.folioFactura} generada y enviada a ${fac.correo}`);
-    this.buscarTicketMostrador();
   }
 
   // --- Simulación de Cobro Rápido en Mostrador ---
   registrarVentaRapida(productoNombre: string, precio: number): void {
     this.facturacionService.registrarVenta([
       { nombre: productoNombre, cantidad: 1, precioUnitario: precio, importe: precio }
-    ]);
-    this.mostrarToast(`✓ Venta registrada: ${productoNombre} ($${precio} MXN)`);
+    ]).subscribe({
+      next: () => {
+        this.mostrarToast(`✓ Venta registrada: ${productoNombre} ($${precio} MXN)`);
+      },
+      error: (err: any) => {
+        alert('Error al registrar la venta.');
+        console.error(err);
+      }
+    });
   }
 
   private mostrarToast(msj: string): void {

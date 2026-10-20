@@ -1,0 +1,14 @@
+<!-- El cliente ve sus pedidos realizados -->
+<div *hasRole="'cliente'">
+    <h2>Mis Pedidos</h2>
+</div>
+
+<!-- El trabajador ve el panel para despachar pedidos -->
+<div *hasRole="'trabajador'">
+    <h2>Pedidos por Preparar</h2>
+</div>
+
+<!-- El admin o trabajador pueden ver el historial completo -->
+<div *hasRole="['admin', 'trabajador']">
+    <button>Descargar Reporte de Pedidos</button>
+</div>

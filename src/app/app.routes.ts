@@ -10,6 +10,11 @@ import { DisenaElTuyo } from './disena-el-tuyo/disena-el-tuyo';
 import { ClienteSucur } from './Sucursales/ClienteSucur/cliente-sucur';
 import { TrabajadorSucur } from './Sucursales/TrabajadorSucur/trabajador-sucur';
 import { AdminSucur } from './Sucursales/AdminSucur/admin-sucur';
+import { InicioSesion } from './inicio-sesion/inicio-sesion';
+import { ApplicationConfig } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
+
 
 export const routes: Routes = [
     { path: '', redirectTo: 'general', pathMatch: 'full' },
@@ -29,4 +34,6 @@ export const routes: Routes = [
     { path: 'sucursales/cliente', component: ClienteSucur },
     { path: 'sucursales/trabajador', component: TrabajadorSucur },
     { path: 'sucursales/admin', component: AdminSucur },
+    { path: 'login', component: InicioSesion },
+    { path: 'inicio-sesion', redirectTo: 'login', pathMatch: 'full' },
 ];

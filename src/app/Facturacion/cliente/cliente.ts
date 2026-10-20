@@ -110,8 +110,8 @@ export class Cliente {
 
     this.errorFeedback.set(null);
     const factura = this.facturacionService.emitirFactura(ticket, datos);
-    this.facturaGenerada.set(factura);
-    this.mensajeFeedback.set(`¡Factura generada exitosamente con Folio Fiscal ${factura.folioFactura}! Se enviaron los archivos a ${factura.correo}.`);
+    // this.facturaGenerada.set(factura);
+    // this.mensajeFeedback.set(`¡Factura generada exitosamente con Folio Fiscal ${factura.folioFactura}! Se enviaron los archivos a ${factura.correo}.`);
   }
 
   descargarArchivo(tipo: 'PDF' | 'XML'): void {

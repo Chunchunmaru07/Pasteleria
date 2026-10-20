@@ -1,0 +1,8 @@
+<!-- Muestra la vista de la carpeta 'admin' solo si el rol en Aiven es admin -->
+<app-admin *hasRole="'admin'"></app-admin>
+
+<!-- Muestra la vista de la carpeta 'trabajador' si el rol es trabajador -->
+<app-trabajador *hasRole="'trabajador'"></app-trabajador>
+
+<!-- Muestra la vista de la carpeta 'cliente' si el rol es cliente -->
+<app-cliente *hasRole="'cliente'"></app-cliente>

@@ -1,0 +1,62 @@
+<!-- Se muestra automáticamente si el usuario en Aiven tiene rol 'admin' -->
+<button *hasRole="'admin'">+ Agregar Nuevo Producto</button>
+
+<!-- Se muestra a admin y trabajador -->
+<div *hasRole="['admin', 'trabajador']">
+    <p>Panel de Gestión de Inventario</p>
+</div>
+
+<div class="contenedor-productos">
+    <!-- Recorremos los productos traídos desde la base de datos -->
+    @for (producto of catalogoService.productos(); track producto.id) {
+    <div class="tarjeta-producto">
+
+        <!-- Imagen y Etiqueta (badge) -->
+        <div class="imagen-container">
+            @if (producto.badge) {
+            <span class="badge">{{ producto.badge }}</span>
+            }
+            <img [src]="producto.imagen" [alt]="producto.nombre" />
+        </div>
+
+        <!-- Información principal -->
+        <div class="cuerpo-tarjeta">
+            <div class="encabezado">
+                <span class="categoria">{{ producto.categoria }}</span>
+                @if (producto.porciones) {
+                <span class="porciones">{{ producto.porciones }}</span>
+                }
+            </div>
+
+            <h3 class="nombre">{{ producto.nombre }}</h3>
+            <p class="sabor">{{ producto.sabor }}</p>
+            <p class="descripcion">{{ producto.descripcion }}</p>
+
+            <!-- Disponibilidad (Stock) -->
+            <div class="disponibilidad">
+                <span class="indicador-stock"></span>
+                Disponible: {{ producto.stock }} piezas
+            </div>
+
+            <hr class="linea-divisora" />
+
+            <!-- Precio y Acción -->
+            <div class="pie-tarjeta">
+                <div class="precio">
+                    <span class="simbolo">$</span>{{ producto.precio }} <span class="moneda">MXN</span>
+                </div>
+
+                <button class="btn-seleccionar" (click)="catalogoService.incrementarSeleccion(producto.id)">
+                    🛒 Seleccionar
+                </button>
+            </div>
+
+        </div>
+    </div>
+    } @empty {
+    <!-- Se muestra si aún no cargan los datos o si la tabla está vacía -->
+    <div class="cargando">
+        <p>Cargando productos desde la base de datos...</p>
+    </div>
+    }
+</div>

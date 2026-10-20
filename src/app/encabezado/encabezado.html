@@ -74,6 +74,20 @@
                         <span>Mis Pedidos</span>
                     </a>
                 </li>
+                @if (facturacionService.usuarioActual()) {
+                <li class="nav-item nav-action-item user-logged-item">
+                    <div class="user-profile-badge" [attr.data-role]="facturacionService.usuarioActual()?.rol">
+                        <span class="material-symbols-outlined user-avatar-icon">account_circle</span>
+                        <div class="user-meta-info">
+                            <span class="user-greeting">{{ facturacionService.usuarioActual()?.nombre }}</span>
+                            <span class="user-role-label">({{ facturacionService.usuarioActual()?.rol | uppercase }})</span>
+                        </div>
+                        <button type="button" class="btn-logout-mini" (click)="facturacionService.logout(); closeMobileMenu()" title="Cerrar sesión">
+                            <span class="material-symbols-outlined">logout</span>
+                        </button>
+                    </div>
+                </li>
+                } @else {
                 <li class="nav-item nav-action-item">
                     <a routerLink="/login" routerLinkActive="active" class="nav-link login-link"
                         (click)="closeMobileMenu()">
@@ -81,6 +95,7 @@
                         <span>Iniciar Sesión / Registro</span>
                     </a>
                 </li>
+                }
             </ul>
         </nav>
     </div>

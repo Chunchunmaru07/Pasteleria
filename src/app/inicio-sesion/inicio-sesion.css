@@ -1,0 +1,672 @@
+/* ==========================================================================
+   INICIO DE SESIÓN / REGISTRO - OLENKA Y EZIS
+   Estética de Pastelería Tradicional Mexicana Fina
+   Colores: Rosa Mexicano (#C2185B), Cempasúchil (#E67E22), Cajeta (#D35400),
+            Verde Agave (#117A65) y Chocolate de Metate (#2C1810)
+   ========================================================================== */
+
+.login-page-wrapper {
+  position: relative;
+  min-height: calc(100vh - 120px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  background-color: var(--bg-cream, #FFFDF8);
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(252, 228, 236, 0.65) 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(254, 245, 231, 0.7) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(232, 248, 245, 0.3) 0%, transparent 60%);
+  overflow: hidden;
+}
+
+/* Partículas y destellos sutiles de azúcar */
+.sugar-sparkles-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.floating-particle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.45;
+  animation: float-sugar 9s infinite ease-in-out alternate;
+}
+
+.particle-1 {
+  width: 280px;
+  height: 280px;
+  background: rgba(194, 24, 91, 0.22);
+  top: 5%;
+  left: 8%;
+}
+
+.particle-2 {
+  width: 320px;
+  height: 320px;
+  background: rgba(230, 126, 34, 0.22);
+  bottom: 8%;
+  right: 5%;
+  animation-delay: -3s;
+}
+
+.particle-3 {
+  width: 220px;
+  height: 220px;
+  background: rgba(17, 122, 101, 0.18);
+  top: 40%;
+  right: 25%;
+  animation-delay: -6s;
+}
+
+@keyframes float-sugar {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-24px) scale(1.08); }
+}
+
+/* ==========================================================================
+   Contenedor Principal de la Tarjeta Dual
+   ========================================================================== */
+.login-main-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.login-card-dual {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  background: #FFFFFF;
+  border-radius: var(--radius-xl, 36px);
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(44, 24, 16, 0.12), 0 4px 18px rgba(194, 24, 91, 0.08);
+  border: 2px solid rgba(211, 84, 0, 0.18);
+}
+
+/* ==========================================================================
+   Columna Izquierda: Panel de Marca (Olenka Y Ezis)
+   ========================================================================== */
+.login-brand-panel {
+  position: relative;
+  background: 
+    linear-gradient(145deg, rgba(44, 24, 16, 0.92) 0%, rgba(136, 14, 79, 0.88) 60%, rgba(194, 24, 91, 0.85) 100%),
+    url('https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1000&q=80') center/cover no-repeat;
+  color: #FFFFFF;
+  padding: 3.5rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.brand-panel-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  height: 100%;
+}
+
+.brand-top-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 6px 16px;
+  border-radius: var(--radius-pill, 9999px);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #FFFDF8;
+  letter-spacing: 0.04em;
+  width: fit-content;
+}
+
+.brand-top-badge .badge-icon {
+  font-size: 18px;
+  color: #F8BBD0;
+}
+
+.brand-title {
+  font-family: var(--font-serif, 'Playfair Display', serif);
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1.15;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.brand-tagline {
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: #FCE4EC;
+  font-weight: 400;
+}
+
+/* Lista de ventajas */
+.brand-perks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin: 1rem 0;
+}
+
+.perk-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.perk-icon-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FAD7A0;
+  flex-shrink: 0;
+}
+
+.perk-icon-circle span {
+  font-size: 22px;
+}
+
+.perk-info strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #FFFFFF;
+  margin-bottom: 2px;
+}
+
+.perk-info p {
+  font-size: 0.82rem;
+  color: #E8D7D2;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.freshness-guarantee-pill {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-pill, 9999px);
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #FFFDF8;
+}
+
+.freshness-guarantee-pill span.material-symbols-outlined {
+  color: var(--color-gold, #F39C12);
+  font-size: 18px;
+}
+
+/* ==========================================================================
+   Columna Derecha: Panel del Formulario
+   ========================================================================== */
+.login-form-panel {
+  padding: 3.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+}
+
+.form-panel-header {
+  margin-bottom: 1.75rem;
+}
+
+.cake-icon-chip {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #FCE4EC 0%, #FEF5E7 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary, #C2185B);
+  box-shadow: 0 4px 12px rgba(194, 24, 91, 0.15);
+  margin-bottom: 0.75rem;
+}
+
+.cake-icon-chip span {
+  font-size: 26px;
+}
+
+.form-title {
+  font-family: var(--font-serif, 'Playfair Display', serif);
+  font-size: 2.1rem;
+  color: var(--text-espresso, #2C1810);
+  font-weight: 800;
+  margin: 0.25rem 0 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.form-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-muted, #84685D);
+  line-height: 1.5;
+}
+
+/* Selector de pestañas Login / Registro */
+.tabs-nav-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--bg-cream-warm, #FAF2E6);
+  padding: 5px;
+  border-radius: var(--radius-pill, 9999px);
+  border: 1px solid rgba(211, 84, 0, 0.16);
+  margin-bottom: 1.75rem;
+}
+
+.tab-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: var(--radius-pill, 9999px);
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-chocolate, #4A2E2B);
+  background: transparent;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.tab-toggle-btn .tab-icon {
+  font-size: 19px;
+  transition: transform 0.25s ease;
+}
+
+.tab-toggle-btn.active {
+  background: #FFFFFF;
+  color: var(--color-primary, #C2185B);
+  box-shadow: 0 4px 12px rgba(44, 24, 16, 0.08);
+}
+
+.tab-toggle-btn.active .tab-icon {
+  color: var(--color-primary, #C2185B);
+}
+
+/* Selector de perfil demo rápido */
+.demo-role-quickselect {
+  background: #FFFDF9;
+  border: 1.5px dashed rgba(211, 84, 0, 0.28);
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin-bottom: 1.5rem;
+}
+
+.demo-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-accent, #D35400);
+  margin-bottom: 10px;
+}
+
+.demo-label .label-icon {
+  font-size: 17px;
+}
+
+.demo-pills-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.role-quick-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(211, 84, 0, 0.2);
+  background: #FFFFFF;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-chocolate, #4A2E2B);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.role-quick-btn span.material-symbols-outlined {
+  font-size: 18px;
+}
+
+.role-quick-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-primary, #C2185B);
+}
+
+.role-quick-btn.selected {
+  background: linear-gradient(135deg, #C2185B 0%, #D81B60 100%);
+  color: #FFFFFF;
+  border-color: #C2185B;
+  box-shadow: 0 4px 12px rgba(194, 24, 91, 0.3);
+}
+
+.role-quick-btn.selected span.material-symbols-outlined {
+  color: #FFFFFF;
+}
+
+/* Alertas de retroalimentación */
+.alert-feedback {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+  animation: slide-in 0.3s ease;
+}
+
+.alert-feedback.error {
+  background: #FDEDEC;
+  border: 1px solid #F5B7B1;
+  color: #C0392B;
+}
+
+.alert-feedback.success {
+  background: #E8F8F5;
+  border: 1px solid #A3E4D7;
+  color: #117A65;
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Formulario */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-row-duo {
+  display: flex;
+  gap: 1rem;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.field-label {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-espresso, #2C1810);
+}
+
+.label-row-split {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.forgot-link {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-primary, #C2185B);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.forgot-link:hover {
+  color: var(--color-accent, #D35400);
+  text-decoration: underline;
+}
+
+.input-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-lead-icon {
+  position: absolute;
+  left: 14px;
+  color: #A1887F;
+  font-size: 20px;
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.sweet-input {
+  width: 100%;
+  padding: 12px 14px 12px 42px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(211, 84, 0, 0.24);
+  background: #FFFFFF;
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.95rem;
+  color: var(--text-espresso, #2C1810);
+  transition: all 0.25s ease;
+}
+
+.sweet-input:focus {
+  outline: none;
+  border-color: var(--color-primary, #C2185B);
+  box-shadow: 0 0 0 4px rgba(194, 24, 91, 0.12);
+}
+
+.sweet-input:focus + .input-lead-icon,
+.input-icon-wrap:focus-within .input-lead-icon {
+  color: var(--color-primary, #C2185B);
+}
+
+.btn-toggle-eye {
+  position: absolute;
+  right: 12px;
+  color: #A1887F;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: color 0.2s ease;
+}
+
+.btn-toggle-eye:hover {
+  color: var(--color-primary, #C2185B);
+}
+
+.btn-toggle-eye span {
+  font-size: 20px;
+}
+
+/* Selector inline para tipo de cuenta al registrar */
+.role-selector-inline {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.role-radio-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(211, 84, 0, 0.22);
+  background: #FFFFFF;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-chocolate, #4A2E2B);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.role-radio-chip input[type="radio"] {
+  display: none;
+}
+
+.role-radio-chip.selected {
+  background: #FEF5E7;
+  border-color: var(--color-accent, #D35400);
+  color: var(--color-accent, #D35400);
+}
+
+.role-radio-chip span.material-symbols-outlined {
+  font-size: 20px;
+}
+
+/* Checkbox con estilo dulce */
+.form-options-row {
+  margin-top: 0.25rem;
+}
+
+.sweet-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-chocolate, #4A2E2B);
+  cursor: pointer;
+}
+
+.sweet-checkbox {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--color-primary, #C2185B);
+  cursor: pointer;
+}
+
+/* Botón principal */
+.btn-submit-sweet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 24px;
+  border-radius: var(--radius-pill, 9999px);
+  background: linear-gradient(135deg, #C2185B 0%, #D81B60 50%, #AD1457 100%);
+  color: #FFFFFF;
+  font-family: var(--font-sans, sans-serif);
+  font-size: 1.02rem;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(194, 24, 91, 0.38), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+  cursor: pointer;
+}
+
+.btn-submit-sweet:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #AD1457 0%, #C2185B 60%, #E91E63 100%);
+  box-shadow: 0 12px 28px rgba(194, 24, 91, 0.48);
+}
+
+.btn-submit-sweet:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.spinner-dot {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #FFFFFF;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Pie del formulario */
+.form-panel-footer {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed rgba(211, 84, 0, 0.2);
+  text-align: center;
+}
+
+.back-home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-accent, #D35400);
+  transition: all 0.2s ease;
+}
+
+.back-home-link:hover {
+  gap: 10px;
+  color: var(--color-primary, #C2185B);
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+@media (max-width: 960px) {
+  .login-card-dual {
+    grid-template-columns: 1fr;
+    max-width: 580px;
+  }
+
+  .login-brand-panel {
+    padding: 2.5rem 2rem;
+  }
+
+  .brand-title {
+    font-size: 2rem;
+  }
+
+  .login-form-panel {
+    padding: 2.5rem 2rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .login-page-wrapper {
+    padding: 1.5rem 1rem;
+  }
+
+  .login-form-panel {
+    padding: 2rem 1.25rem;
+  }
+
+  .form-row-duo {
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .demo-pills-row {
+    grid-template-columns: 1fr;
+  }
+}

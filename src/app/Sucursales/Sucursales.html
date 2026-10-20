@@ -1,0 +1,8 @@
+<!-- Vista general para todos los usuarios -->
+<!--<app-mapa-sucursales></app-mapa-sucursales>-->
+
+<!-- Solo el Administrador ve los botones de gestión -->
+<div *hasRole="'admin'">
+    <button>+ Agregar Nueva Sucursal</button>
+    <button>Editar Horarios</button>
+</div>

@@ -1,0 +1,260 @@
+<div class="pedidos-wrapper">
+  <!-- Barra de Conmutación de Roles para Pruebas -->
+  <div class="role-selector-bar">
+    <div class="role-selector-container">
+      <div class="role-info">
+        <span class="role-tag client-tag">
+          <span class="material-symbols-outlined">person</span> Modo Cliente
+        </span>
+        <span class="role-desc">Solo ves tus propios pedidos personales y el estado de entrega en tiempo real.</span>
+      </div>
+      <div class="role-switcher">
+        <span class="switch-label">Cambiar de rol:</span>
+        <a routerLink="/pedidos/cliente" class="role-pill active">
+          <span class="material-symbols-outlined">person</span> Mis Pedidos (Cliente)
+        </a>
+        <a routerLink="/pedidos/trabajador" class="role-pill">
+          <span class="material-symbols-outlined">badge</span> Mi Tienda (Trabajador)
+        </a>
+        <a routerLink="/pedidos/admin" class="role-pill">
+          <span class="material-symbols-outlined">admin_panel_settings</span> Todas las Tiendas (Admin)
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="pedidos-container">
+    <!-- Encabezado Cliente -->
+    <header class="pedidos-header">
+      <div class="user-greeting-chip">
+        <span class="material-symbols-outlined">shopping_bag</span>
+        <span>Mis Pedidos Dulces</span>
+      </div>
+      <h1 class="pedidos-title">Seguimiento de Mis Pedidos</h1>
+      <p class="pedidos-subtitle">
+        Consulta el estado de preparación de tus pasteles y postres horneados en <strong>Olenka Y Ezis</strong>. 
+        Te notificaremos cada vez que tu pedido pase de nuestro horno a la mesa de decoración.
+      </p>
+
+      <!-- Resumen Métricas de Cliente -->
+      <div class="client-stats-row">
+        <div class="stat-bubble active-bubble">
+          <div class="stat-number">{{ pedidosActivosCount() }}</div>
+          <div class="stat-label">Pedidos en Proceso</div>
+        </div>
+        <div class="stat-bubble delivered-bubble">
+          <div class="stat-number">{{ pedidosEntregadosCount() }}</div>
+          <div class="stat-label">Pedidos Entregados</div>
+        </div>
+        <div class="stat-action-bubble">
+          <a routerLink="/catalogo" class="btn-new-order">
+            <span class="material-symbols-outlined">add_circle</span>
+            <span>Hacer Nuevo Pedido</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Filtros de Estado -->
+    <div class="filters-bar">
+      <div class="filter-pills-list">
+        <button 
+          type="button" 
+          class="filter-pill" 
+          [class.active]="filtroEstado() === 'Todos'" 
+          (click)="filtroEstado.set('Todos')"
+        >
+          Todos ({{ pedidosService.pedidosPorCliente(facturacionService.usuarioActual()?.id, facturacionService.usuarioActual()?.correo).length }})
+        </button>
+        <button 
+          type="button" 
+          class="filter-pill" 
+          [class.active]="filtroEstado() === 'Decorando'" 
+          (click)="filtroEstado.set('Decorando')"
+        >
+          En Decoración
+        </button>
+        <button 
+          type="button" 
+          class="filter-pill" 
+          [class.active]="filtroEstado() === 'Listo'" 
+          (click)="filtroEstado.set('Listo')"
+        >
+          Listos para Entrega
+        </button>
+        <button 
+          type="button" 
+          class="filter-pill" 
+          [class.active]="filtroEstado() === 'Entregado'" 
+          (click)="filtroEstado.set('Entregado')"
+        >
+          Historial Entregados
+        </button>
+      </div>
+    </div>
+
+    <!-- Lista de Pedidos del Cliente -->
+    @if (misPedidos().length > 0) {
+      <div class="pedidos-grid">
+        @for (pedido of misPedidos(); track pedido.id) {
+          <article class="order-card">
+            <div class="order-card-header">
+              <div class="order-id-group">
+                <span class="order-folio">{{ pedido.id }}</span>
+                <span class="order-date">{{ pedido.fechaCreacion | date:'dd/MM/yyyy · hh:mm a' }}</span>
+              </div>
+              <div class="status-badge" [ngClass]="getEstadoClass(pedido.estado)">
+                <span class="material-symbols-outlined icon">{{ getEstadoIcon(pedido.estado) }}</span>
+                <span>{{ pedido.estado }}</span>
+              </div>
+            </div>
+
+            <!-- Sucursal de retiro / entrega -->
+            <div class="order-branch-banner">
+              <span class="material-symbols-outlined">storefront</span>
+              <span class="branch-text">{{ pedido.sucursalNombre }}</span>
+            </div>
+
+            <!-- Resumen de items -->
+            <div class="order-items-preview">
+              <ul class="items-list">
+                @for (item of pedido.items; track item.nombre) {
+                  <li class="item-entry">
+                    <span class="item-qty">{{ item.cantidad }}x</span>
+                    <span class="item-name">{{ item.nombre }}</span>
+                    <span class="item-price">${{ item.importe }}</span>
+                  </li>
+                }
+              </ul>
+            </div>
+
+            <!-- Footer con Total y Acciones -->
+            <footer class="order-card-footer">
+              <div class="order-total-box">
+                <span class="total-label">Total a Pagar:</span>
+                <span class="total-val">${{ pedido.total }} <small>MXN</small></span>
+              </div>
+              <button type="button" class="btn-view-detail" (click)="verDetalle(pedido)">
+                <span class="material-symbols-outlined">visibility</span>
+                <span>Ver Detalle</span>
+              </button>
+            </footer>
+          </article>
+        }
+      </div>
+    } @else {
+      <!-- Estado Vacío -->
+      <div class="empty-orders-card">
+        <div class="empty-icon-wrap">
+          <span class="material-symbols-outlined">shopping_basket</span>
+        </div>
+        <h3>No tienes pedidos con el filtro seleccionado</h3>
+        <p>¿Antojo de un pastel de autor o pan dulce tradicional recién horneado? Explora nuestro catálogo artesanal.</p>
+        <a routerLink="/catalogo" class="btn-empty-shop">
+          <span class="material-symbols-outlined">menu_book</span>
+          <span>Explorar Catálogo</span>
+        </a>
+      </div>
+    }
+  </div>
+
+  <!-- MODAL DE DETALLE DE PEDIDO -->
+  @if (pedidoDetalle()) {
+    <div class="modal-overlay" (click)="cerrarDetalle()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <div>
+            <span class="modal-tag">Detalle de Pedido</span>
+            <h3 class="modal-title">{{ pedidoDetalle()?.id }}</h3>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="cerrarDetalle()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </header>
+
+        <div class="modal-body">
+          <div class="detail-status-banner" [ngClass]="getEstadoClass(pedidoDetalle()!.estado)">
+            <span class="material-symbols-outlined">{{ getEstadoIcon(pedidoDetalle()!.estado) }}</span>
+            <div>
+              <strong>Estado Actual: {{ pedidoDetalle()?.estado }}</strong>
+              <p>Entrega estimada: {{ pedidoDetalle()?.fechaEntregaEstimada | date:'dd/MM/yyyy · hh:mm a' }}</p>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4>Punto de Entrega</h4>
+            <div class="info-box">
+              <p><strong>Sucursal:</strong> {{ pedidoDetalle()?.sucursalNombre }}</p>
+              <p><strong>Modalidad:</strong> {{ pedidoDetalle()?.metodoEntrega }}</p>
+              @if (pedidoDetalle()?.direccionEntrega) {
+                <p><strong>Dirección:</strong> {{ pedidoDetalle()?.direccionEntrega }}</p>
+              }
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4>Productos</h4>
+            <div class="detail-table-wrap">
+              <table class="detail-table">
+                <thead>
+                  <tr>
+                    <th>Cant.</th>
+                    <th>Producto</th>
+                    <th>P. Unitario</th>
+                    <th>Importe</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (it of pedidoDetalle()?.items; track it.nombre) {
+                    <tr>
+                      <td><strong>{{ it.cantidad }}</strong></td>
+                      <td>
+                        <div>{{ it.nombre }}</div>
+                        @if (it.notas) {
+                          <small class="item-note">Nota: {{ it.notas }}</small>
+                        }
+                      </td>
+                      <td>${{ it.precioUnitario }}</td>
+                      <td><strong>${{ it.importe }}</strong></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          @if (pedidoDetalle()?.notasEspeciales) {
+            <div class="detail-section">
+              <h4>Dedicatoria / Notas Especiales</h4>
+              <div class="note-box">
+                <span class="material-symbols-outlined">edit_note</span>
+                <span>{{ pedidoDetalle()?.notasEspeciales }}</span>
+              </div>
+            </div>
+          }
+
+          <div class="detail-totals">
+            <div class="total-line">
+              <span>Subtotal:</span>
+              <span>${{ pedidoDetalle()?.subtotal }}</span>
+            </div>
+            <div class="total-line">
+              <span>Envío:</span>
+              <span>${{ pedidoDetalle()?.costoEnvio }}</span>
+            </div>
+            <div class="total-line grand">
+              <span>Total:</span>
+              <span class="price-big">${{ pedidoDetalle()?.total }} MXN</span>
+            </div>
+          </div>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn-modal-close" (click)="cerrarDetalle()">
+            <span>Cerrar</span>
+          </button>
+        </footer>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,410 @@
+<div class="pedidos-wrapper">
+  <!-- Barra de Conmutación de Roles para Pruebas -->
+  <div class="role-selector-bar">
+    <div class="role-selector-container">
+      <div class="role-info">
+        <span class="role-tag admin-tag">
+          <span class="material-symbols-outlined">admin_panel_settings</span> Modo Administrador General
+        </span>
+        <span class="role-desc">Auditoría consolidada de pedidos de <strong>todas las sucursales</strong> de la cadena.</span>
+      </div>
+      <div class="role-switcher">
+        <span class="switch-label">Cambiar de rol:</span>
+        <a routerLink="/pedidos/cliente" class="role-pill">
+          <span class="material-symbols-outlined">person</span> Mis Pedidos (Cliente)
+        </a>
+        <a routerLink="/pedidos/trabajador" class="role-pill">
+          <span class="material-symbols-outlined">badge</span> Mi Tienda (Trabajador)
+        </a>
+        <a routerLink="/pedidos/admin" class="role-pill active">
+          <span class="material-symbols-outlined">admin_panel_settings</span> Todas las Tiendas (Admin)
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="pedidos-container">
+    <!-- Encabezado Administrador -->
+    <header class="pedidos-header">
+      <div class="admin-badge-chip">
+        <span class="material-symbols-outlined">hub</span>
+        <span>Panel de Control de Cadena Olenka Y Ezis</span>
+      </div>
+      <h1 class="pedidos-title">Control Maestro de Pedidos (Todas las Tiendas)</h1>
+      <p class="pedidos-subtitle">
+        Visualiza y audita en tiempo real el flujo de pedidos de todas las sucursales de Durango, volumen de ventas y tiempos de horneado.
+      </p>
+
+      <!-- 4 TARJETAS KPI GLOBALES DE TODAS LAS TIENDAS -->
+      <div class="kpi-master-grid">
+        <div class="kpi-master-card card-total">
+          <div class="kpi-card-head">
+            <span class="material-symbols-outlined icon">receipt_long</span>
+            <span class="kpi-label">Pedidos Totales Cadena</span>
+          </div>
+          <div class="kpi-number">{{ totalPedidosCadena() }}</div>
+          <div class="kpi-footer">En las 5 sucursales de Durango</div>
+        </div>
+
+        <div class="kpi-master-card card-income">
+          <div class="kpi-card-head">
+            <span class="material-symbols-outlined icon">payments</span>
+            <span class="kpi-label">Ventas Brutas en Pedidos</span>
+          </div>
+          <div class="kpi-number">${{ ingresosTotalesCadena() }} <span class="curr">MXN</span></div>
+          <div class="kpi-footer">Ingresos totales acumulados</div>
+        </div>
+
+        <div class="kpi-master-card card-active">
+          <div class="kpi-card-head">
+            <span class="material-symbols-outlined icon">local_fire_department</span>
+            <span class="kpi-label">Pedidos en Preparación</span>
+          </div>
+          <div class="kpi-number">{{ pedidosActivosGlobal() }}</div>
+          <div class="kpi-footer">En hornos, mesas y empaque</div>
+        </div>
+
+        <div class="kpi-master-card card-delivered">
+          <div class="kpi-card-head">
+            <span class="material-symbols-outlined icon">task_alt</span>
+            <span class="kpi-label">Entregas Exitosas</span>
+          </div>
+          <div class="kpi-number">{{ pedidosEntregadosGlobal() }}</div>
+          <div class="kpi-footer">Clientes satisfechos</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- DESGLOSE COMPARATIVO POR CADA SUCURSAL -->
+    <section class="branches-overview-section">
+      <div class="section-title-row">
+        <h3>
+          <span class="material-symbols-outlined">storefront</span>
+          <span>Desglose Operativo por Tienda</span>
+        </h3>
+        <span class="section-badge">{{ sucursalesService.sucursales().length }} Sucursales Activas</span>
+      </div>
+
+      <div class="branches-cards-row">
+        @for (m of metricasPorSucursal(); track m.sucursal.id) {
+          <div 
+            class="branch-summary-card" 
+            [class.selected]="sucursalFiltro() === m.sucursal.id"
+            (click)="sucursalFiltro.set(sucursalFiltro() === m.sucursal.id ? 'Todas' : m.sucursal.id)"
+          >
+            <div class="branch-card-header">
+              <span class="branch-tag">{{ m.sucursal.zona }}</span>
+              <span class="branch-order-count">{{ m.totalPedidos }} pedidos</span>
+            </div>
+            <h4 class="branch-card-name">{{ m.sucursal.nombre }}</h4>
+            <div class="branch-stats-mini">
+              <div>
+                <small>En proceso:</small>
+                <strong>{{ m.activos }}</strong>
+              </div>
+              <div>
+                <small>Ventas:</small>
+                <strong>${{ m.totalIngresos }}</strong>
+              </div>
+            </div>
+            <div class="filter-hint">
+              {{ sucursalFiltro() === m.sucursal.id ? '✓ Filtrando esta tienda' : 'Clic para filtrar' }}
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- BARRA DE FILTROS GLOBALES -->
+    <div class="admin-toolbar">
+      <div class="search-input-wrap">
+        <span class="material-symbols-outlined">search</span>
+        <input 
+          type="text" 
+          placeholder="Buscar por folio, cliente, sucursal o pastel..." 
+          [ngModel]="busqueda()"
+          (ngModelChange)="busqueda.set($event)"
+          class="search-box-input"
+        />
+        @if (busqueda()) {
+          <button type="button" class="clear-search-btn" (click)="busqueda.set('')">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        }
+      </div>
+
+      <!-- Filtro por Sucursal -->
+      <div class="select-group">
+        <label for="filtroSucursal">Sucursal:</label>
+        <select 
+          id="filtroSucursal"
+          [ngModel]="sucursalFiltro()" 
+          (ngModelChange)="sucursalFiltro.set($event)"
+          class="toolbar-select"
+        >
+          <option value="Todas">Todas las Sucursales (Consolidado)</option>
+          @for (suc of sucursalesService.sucursales(); track suc.id) {
+            <option [value]="suc.id">{{ suc.nombre }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Filtro por Estado -->
+      <div class="select-group">
+        <label for="filtroEstado">Estado:</label>
+        <select 
+          id="filtroEstado"
+          [ngModel]="estadoFiltro()" 
+          (ngModelChange)="estadoFiltro.set($event)"
+          class="toolbar-select"
+        >
+          <option value="Todos">Todos los Estados</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="En Horno">En Horno</option>
+          <option value="Decorando">Decorando</option>
+          <option value="Listo">Listo</option>
+          <option value="Entregado">Entregado</option>
+          <option value="Cancelado">Cancelado</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- TABLA MAESTRA DE AUDITORÍA DE PEDIDOS (ADMIN) -->
+    @if (pedidosGlobales().length > 0) {
+      <div class="admin-table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Folio</th>
+              <th>Sucursal Asignada</th>
+              <th>Cliente & Teléfono</th>
+              <th>Detalle de Productos</th>
+              <th>Modalidad</th>
+              <th>Monto Total</th>
+              <th>Estado Actual</th>
+              <th>Gestión Admin</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (pedido of pedidosGlobales(); track pedido.id) {
+              <tr>
+                <td>
+                  <strong class="folio-text">{{ pedido.id }}</strong>
+                  <small class="folio-date">{{ pedido.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</small>
+                </td>
+
+                <!-- Sucursal -->
+                <td>
+                  <div class="branch-pill-table">
+                    <span class="material-symbols-outlined">storefront</span>
+                    <span>{{ pedido.sucursalNombre }}</span>
+                  </div>
+                </td>
+
+                <!-- Cliente -->
+                <td>
+                  <div class="client-title">{{ pedido.clienteNombre }}</div>
+                  <div class="client-sub">{{ pedido.clienteTelefono }}</div>
+                </td>
+
+                <!-- Productos -->
+                <td>
+                  <div class="products-summary">
+                    @for (it of pedido.items; track it.nombre) {
+                      <span class="product-chip">
+                        {{ it.cantidad }}x {{ it.nombre }}
+                      </span>
+                    }
+                  </div>
+                </td>
+
+                <!-- Modalidad -->
+                <td>
+                  <span class="delivery-type-tag" [class.delivery-dom]="pedido.metodoEntrega === 'Domicilio'">
+                    <span class="material-symbols-outlined">
+                      {{ pedido.metodoEntrega === 'Domicilio' ? 'local_shipping' : 'shopping_bag' }}
+                    </span>
+                    <span>{{ pedido.metodoEntrega }}</span>
+                  </span>
+                </td>
+
+                <!-- Total -->
+                <td>
+                  <span class="price-cell">${{ pedido.total }}</span>
+                  <small class="pay-cell">{{ pedido.metodoPago }}</small>
+                </td>
+
+                <!-- Estado -->
+                <td>
+                  <span class="status-badge" [ngClass]="getEstadoClass(pedido.estado)">
+                    <span class="material-symbols-outlined icon">{{ getEstadoIcon(pedido.estado) }}</span>
+                    <span>{{ pedido.estado }}</span>
+                  </span>
+                </td>
+
+                <!-- Acciones Admin -->
+                <td>
+                  <button type="button" class="btn-table-admin" (click)="verDetalle(pedido)">
+                    <span class="material-symbols-outlined">tune</span>
+                    <span>Administrar</span>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="empty-search-box">
+        <span class="material-symbols-outlined icon">search_off</span>
+        <h3>No se encontraron pedidos con los criterios de búsqueda</h3>
+        <p>Prueba ajustando el filtro de sucursal, estado o limpiando el texto del buscador.</p>
+      </div>
+    }
+  </div>
+
+  <!-- MODAL DE ADMINISTRACIÓN Y AUDITORÍA DE PEDIDO -->
+  @if (pedidoDetalle()) {
+    <div class="modal-overlay" (click)="cerrarDetalle()">
+      <div class="modal-card admin-modal-card" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <div>
+            <span class="modal-tag">Auditoría Directiva · {{ pedidoDetalle()?.sucursalNombre }}</span>
+            <h3 class="modal-title">{{ pedidoDetalle()?.id }}</h3>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="cerrarDetalle()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </header>
+
+        <div class="modal-body">
+          <!-- Control Maestro de Estado -->
+          <div class="admin-status-control">
+            <span class="control-label">Actualizar Estado en Cadena:</span>
+            <div class="admin-states-grid">
+              <button 
+                type="button" 
+                class="admin-state-btn btn-pend"
+                [class.selected]="pedidoDetalle()?.estado === 'Pendiente'"
+                (click)="actualizarEstadoAdmin(pedidoDetalle()!, 'Pendiente')"
+              >
+                Pendiente
+              </button>
+              <button 
+                type="button" 
+                class="admin-state-btn btn-oven"
+                [class.selected]="pedidoDetalle()?.estado === 'En Horno'"
+                (click)="actualizarEstadoAdmin(pedidoDetalle()!, 'En Horno')"
+              >
+                En Horno
+              </button>
+              <button 
+                type="button" 
+                class="admin-state-btn btn-decor"
+                [class.selected]="pedidoDetalle()?.estado === 'Decorando'"
+                (click)="actualizarEstadoAdmin(pedidoDetalle()!, 'Decorando')"
+              >
+                Decorando
+              </button>
+              <button 
+                type="button" 
+                class="admin-state-btn btn-ready"
+                [class.selected]="pedidoDetalle()?.estado === 'Listo'"
+                (click)="actualizarEstadoAdmin(pedidoDetalle()!, 'Listo')"
+              >
+                Listo
+              </button>
+              <button 
+                type="button" 
+                class="admin-state-btn btn-done"
+                [class.selected]="pedidoDetalle()?.estado === 'Entregado'"
+                (click)="actualizarEstadoAdmin(pedidoDetalle()!, 'Entregado')"
+              >
+                Entregado
+              </button>
+              <button 
+                type="button" 
+                class="admin-state-btn btn-cancel"
+                [class.selected]="pedidoDetalle()?.estado === 'Cancelado'"
+                (click)="actualizarEstadoAdmin(pedidoDetalle()!, 'Cancelado')"
+              >
+                Cancelado
+              </button>
+            </div>
+          </div>
+
+          <div class="info-grid-duo">
+            <div class="info-box">
+              <h4>Cliente & Contacto</h4>
+              <p><strong>Nombre:</strong> {{ pedidoDetalle()?.clienteNombre }}</p>
+              <p><strong>Teléfono:</strong> {{ pedidoDetalle()?.clienteTelefono }}</p>
+              <p><strong>Email:</strong> {{ pedidoDetalle()?.clienteEmail }}</p>
+            </div>
+
+            <div class="info-box">
+              <h4>Logística & Entrega</h4>
+              <p><strong>Sucursal:</strong> {{ pedidoDetalle()?.sucursalNombre }}</p>
+              <p><strong>Modalidad:</strong> {{ pedidoDetalle()?.metodoEntrega }}</p>
+              <p><strong>Método Pago:</strong> {{ pedidoDetalle()?.metodoPago }}</p>
+              @if (pedidoDetalle()?.direccionEntrega) {
+                <p><strong>Dirección:</strong> {{ pedidoDetalle()?.direccionEntrega }}</p>
+              }
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4>Conceptos del Pedido</h4>
+            <div class="detail-table-wrap">
+              <table class="detail-table">
+                <thead>
+                  <tr>
+                    <th>Cant.</th>
+                    <th>Producto</th>
+                    <th>P. Unitario</th>
+                    <th>Importe</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (it of pedidoDetalle()?.items; track it.nombre) {
+                    <tr>
+                      <td><strong>{{ it.cantidad }}</strong></td>
+                      <td>
+                        <div>{{ it.nombre }}</div>
+                        @if (it.notas) {
+                          <small class="item-note">{{ it.notas }}</small>
+                        }
+                      </td>
+                      <td>${{ it.precioUnitario }}</td>
+                      <td><strong>${{ it.importe }}</strong></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="detail-totals">
+            <div class="total-line">
+              <span>Subtotal:</span>
+              <span>${{ pedidoDetalle()?.subtotal }} MXN</span>
+            </div>
+            <div class="total-line">
+              <span>Costo Envío:</span>
+              <span>${{ pedidoDetalle()?.costoEnvio }} MXN</span>
+            </div>
+            <div class="total-line grand">
+              <span>Total Liquidado:</span>
+              <span class="price-big">${{ pedidoDetalle()?.total }} MXN</span>
+            </div>
+          </div>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn-modal-close" (click)="cerrarDetalle()">
+            <span>Cerrar Panel</span>
+          </button>
+        </footer>
+      </div>
+    </div>
+  }
+</div>

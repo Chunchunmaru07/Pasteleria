@@ -271,6 +271,80 @@
     box-shadow: 0 8px 22px rgba(194, 24, 91, 0.48);
 }
 
+/* Badge de Usuario Conectado */
+.user-profile-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #FFFFFF;
+    border: 1.5px solid rgba(194, 24, 91, 0.28);
+    padding: 6px 14px;
+    border-radius: var(--radius-pill, 9999px);
+    box-shadow: 0 2px 8px rgba(44, 24, 16, 0.06);
+    transition: all 0.25s ease;
+}
+
+.user-profile-badge[data-role="admin"] {
+    border-color: rgba(211, 84, 0, 0.4);
+    background: #FEF5E7;
+}
+
+.user-profile-badge[data-role="trabajador"] {
+    border-color: rgba(17, 122, 101, 0.4);
+    background: #E8F8F5;
+}
+
+.user-avatar-icon {
+    font-size: 22px;
+    color: var(--color-primary, #C2185B);
+}
+
+.user-meta-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+}
+
+.user-greeting {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-espresso, #2C1810);
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-role-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--color-accent, #D35400);
+}
+
+.btn-logout-mini {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(194, 24, 91, 0.1);
+    color: var(--color-primary, #C2185B);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 4px;
+}
+
+.btn-logout-mini:hover {
+    background: var(--color-primary, #C2185B);
+    color: #FFFFFF;
+    transform: scale(1.1);
+}
+
+.btn-logout-mini span {
+    font-size: 16px;
+}
+
 /* ==========================================================================
    Botón Móvil & Responsive
    ========================================================================== */

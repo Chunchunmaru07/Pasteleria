@@ -1,0 +1,417 @@
+<div class="pedidos-wrapper">
+  <!-- Barra de Conmutación de Roles para Pruebas -->
+  <div class="role-selector-bar">
+    <div class="role-selector-container">
+      <div class="role-info">
+        <span class="role-tag worker-tag">
+          <span class="material-symbols-outlined">badge</span> Modo Trabajador
+        </span>
+        <span class="role-desc">Solo puedes ver y gestionar los pedidos de <strong>tu respectiva tienda asignada</strong>.</span>
+      </div>
+      <div class="role-switcher">
+        <span class="switch-label">Cambiar de rol:</span>
+        <a routerLink="/pedidos/cliente" class="role-pill">
+          <span class="material-symbols-outlined">person</span> Mis Pedidos (Cliente)
+        </a>
+        <a routerLink="/pedidos/trabajador" class="role-pill active">
+          <span class="material-symbols-outlined">badge</span> Mi Tienda (Trabajador)
+        </a>
+        <a routerLink="/pedidos/admin" class="role-pill">
+          <span class="material-symbols-outlined">admin_panel_settings</span> Todas las Tiendas (Admin)
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="pedidos-container">
+    <!-- Encabezado Trabajador con selector de tienda activa -->
+    <header class="pedidos-header">
+      <div class="header-top-row">
+        <div>
+          <div class="branch-indicator-chip">
+            <span class="material-symbols-outlined">storefront</span>
+            <span>Tienda: {{ sucursalActual().nombre }}</span>
+          </div>
+          <h1 class="pedidos-title">Gestión de Pedidos de Mostrador & Taller</h1>
+          <p class="pedidos-subtitle">
+            Monitorea los pasteles en horneado, mesas de decoración y entregas listas para clientes en esta sucursal.
+          </p>
+        </div>
+
+        <!-- Selector de Sucursal Asignada para pruebas de trabajador -->
+        <div class="branch-switch-box">
+          <label for="sucursalSelect">Cambiar de Sucursal Asignada:</label>
+          <select 
+            id="sucursalSelect"
+            [ngModel]="sucursalAsignadaId()" 
+            (ngModelChange)="cambiarSucursal($event)"
+            class="branch-select"
+          >
+            @for (suc of sucursalesService.sucursales(); track suc.id) {
+              <option [value]="suc.id">{{ suc.nombre }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <!-- Tarjetas KPI de la Tienda -->
+      <div class="kpi-store-row">
+        <div class="kpi-badge-card card-pendiente" (click)="filtroEstado.set('Pendiente')">
+          <span class="material-symbols-outlined icon">schedule</span>
+          <div>
+            <div class="kpi-num">{{ pendientesCount() }}</div>
+            <div class="kpi-name">Nuevos / Pendientes</div>
+          </div>
+        </div>
+
+        <div class="kpi-badge-card card-horno" (click)="filtroEstado.set('Decorando')">
+          <span class="material-symbols-outlined icon">palette</span>
+          <div>
+            <div class="kpi-num">{{ enPreparacionCount() }}</div>
+            <div class="kpi-name">En Horno & Decorado</div>
+          </div>
+        </div>
+
+        <div class="kpi-badge-card card-listo" (click)="filtroEstado.set('Listo')">
+          <span class="material-symbols-outlined icon">check_circle</span>
+          <div>
+            <div class="kpi-num">{{ listosCount() }}</div>
+            <div class="kpi-name">Listos para Entrega</div>
+          </div>
+        </div>
+
+        <div class="kpi-badge-card card-entregado" (click)="filtroEstado.set('Entregado')">
+          <span class="material-symbols-outlined icon">task_alt</span>
+          <div>
+            <div class="kpi-num">{{ entregadosHoyCount() }}</div>
+            <div class="kpi-name">Entregados Hoy</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Barra de Búsqueda y Filtros de Estado -->
+    <div class="toolbar-section">
+      <div class="search-input-wrap">
+        <span class="material-symbols-outlined">search</span>
+        <input 
+          type="text" 
+          placeholder="Buscar por folio, cliente o producto..." 
+          [ngModel]="busqueda()"
+          (ngModelChange)="busqueda.set($event)"
+          class="search-box-input"
+        />
+        @if (busqueda()) {
+          <button type="button" class="clear-search-btn" (click)="busqueda.set('')">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        }
+      </div>
+
+      <div class="filter-pills-row">
+        <button 
+          type="button" 
+          class="status-filter-btn" 
+          [class.active]="filtroEstado() === 'Todos'"
+          (click)="filtroEstado.set('Todos')"
+        >
+          Todos ({{ pedidosService.pedidosPorSucursal(sucursalAsignadaId()).length }})
+        </button>
+        <button 
+          type="button" 
+          class="status-filter-btn" 
+          [class.active]="filtroEstado() === 'Pendiente'"
+          (click)="filtroEstado.set('Pendiente')"
+        >
+          Pendiente
+        </button>
+        <button 
+          type="button" 
+          class="status-filter-btn" 
+          [class.active]="filtroEstado() === 'En Horno'"
+          (click)="filtroEstado.set('En Horno')"
+        >
+          En Horno
+        </button>
+        <button 
+          type="button" 
+          class="status-filter-btn" 
+          [class.active]="filtroEstado() === 'Decorando'"
+          (click)="filtroEstado.set('Decorando')"
+        >
+          Decorando
+        </button>
+        <button 
+          type="button" 
+          class="status-filter-btn" 
+          [class.active]="filtroEstado() === 'Listo'"
+          (click)="filtroEstado.set('Listo')"
+        >
+          Listo
+        </button>
+        <button 
+          type="button" 
+          class="status-filter-btn" 
+          [class.active]="filtroEstado() === 'Entregado'"
+          (click)="filtroEstado.set('Entregado')"
+        >
+          Entregado
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabla / Tarjetas de Pedidos del Trabajador -->
+    @if (pedidosTienda().length > 0) {
+      <div class="worker-orders-table-card">
+        <table class="worker-table">
+          <thead>
+            <tr>
+              <th>Folio</th>
+              <th>Cliente & Contacto</th>
+              <th>Productos & Notas</th>
+              <th>Entrega Estimada</th>
+              <th>Total</th>
+              <th>Estado Actual</th>
+              <th>Acción Rápida de Taller</th>
+              <th>Detalle</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (pedido of pedidosTienda(); track pedido.id) {
+              <tr>
+                <!-- Folio -->
+                <td>
+                  <span class="folio-cell">{{ pedido.id }}</span>
+                  <small class="folio-date">{{ pedido.fechaCreacion | date:'dd/MM HH:mm' }}</small>
+                </td>
+
+                <!-- Cliente -->
+                <td>
+                  <div class="client-name">{{ pedido.clienteNombre }}</div>
+                  <div class="client-phone">
+                    <span class="material-symbols-outlined">call</span>
+                    <span>{{ pedido.clienteTelefono }}</span>
+                  </div>
+                </td>
+
+                <!-- Items -->
+                <td>
+                  <ul class="items-mini-list">
+                    @for (it of pedido.items; track it.nombre) {
+                      <li>
+                        <strong>{{ it.cantidad }}x</strong> {{ it.nombre }}
+                        @if (it.notas) {
+                          <span class="note-pill">"{{ it.notas }}"</span>
+                        }
+                      </li>
+                    }
+                  </ul>
+                </td>
+
+                <!-- Entrega -->
+                <td>
+                  <div class="delivery-badge" [class.domicilio]="pedido.metodoEntrega === 'Domicilio'">
+                    <span class="material-symbols-outlined">
+                      {{ pedido.metodoEntrega === 'Domicilio' ? 'local_shipping' : 'storefront' }}
+                    </span>
+                    <span>{{ pedido.metodoEntrega }}</span>
+                  </div>
+                  <small class="delivery-time">{{ pedido.fechaEntregaEstimada | date:'hh:mm a' }}</small>
+                </td>
+
+                <!-- Total -->
+                <td>
+                  <div class="table-total">${{ pedido.total }}</div>
+                  <small class="pay-method">{{ pedido.metodoPago }}</small>
+                </td>
+
+                <!-- Estado -->
+                <td>
+                  <span class="status-badge" [ngClass]="getEstadoClass(pedido.estado)">
+                    <span class="material-symbols-outlined icon">{{ getEstadoIcon(pedido.estado) }}</span>
+                    <span>{{ pedido.estado }}</span>
+                  </span>
+                </td>
+
+                <!-- Botones de transición de estado -->
+                <td>
+                  <div class="status-flow-actions">
+                    @if (pedido.estado === 'Pendiente') {
+                      <button type="button" class="btn-action-flow btn-to-oven" (click)="avanzarEstado(pedido, 'En Horno')">
+                        <span class="material-symbols-outlined">local_fire_department</span>
+                        <span>Mandar a Horno</span>
+                      </button>
+                    }
+                    @else if (pedido.estado === 'En Horno') {
+                      <button type="button" class="btn-action-flow btn-to-decor" (click)="avanzarEstado(pedido, 'Decorando')">
+                        <span class="material-symbols-outlined">palette</span>
+                        <span>Pasar a Decorar</span>
+                      </button>
+                    }
+                    @else if (pedido.estado === 'Decorando') {
+                      <button type="button" class="btn-action-flow btn-to-ready" (click)="avanzarEstado(pedido, 'Listo')">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        <span>Marcar Listo</span>
+                      </button>
+                    }
+                    @else if (pedido.estado === 'Listo') {
+                      <button type="button" class="btn-action-flow btn-to-deliver" (click)="avanzarEstado(pedido, 'Entregado')">
+                        <span class="material-symbols-outlined">task_alt</span>
+                        <span>Entregar a Cliente</span>
+                      </button>
+                    }
+                    @else if (pedido.estado === 'Entregado') {
+                      <span class="done-tag">
+                        <span class="material-symbols-outlined">done_all</span> Completado
+                      </span>
+                    }
+                  </div>
+                </td>
+
+                <!-- Ver Detalle -->
+                <td>
+                  <button type="button" class="btn-icon-table" (click)="verDetalle(pedido)" title="Ver detalle completo">
+                    <span class="material-symbols-outlined">visibility</span>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <!-- Estado vacío para esta tienda -->
+      <div class="empty-branch-box">
+        <span class="material-symbols-outlined icon">receipt_long</span>
+        <h3>No hay pedidos registrados en {{ sucursalActual().nombre }} con este filtro</h3>
+        <p>Todos los pedidos recibidos en esta sucursal aparecerán aquí con su flujo de preparación.</p>
+      </div>
+    }
+  </div>
+
+  <!-- MODAL DE DETALLE PARA EL TRABAJADOR -->
+  @if (pedidoDetalle()) {
+    <div class="modal-overlay" (click)="cerrarDetalle()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <div>
+            <span class="modal-tag">Control de Mostrador · {{ sucursalActual().nombre }}</span>
+            <h3 class="modal-title">{{ pedidoDetalle()?.id }}</h3>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="cerrarDetalle()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </header>
+
+        <div class="modal-body">
+          <div class="worker-status-changer">
+            <span class="changer-label">Cambiar Estado de Preparación:</span>
+            <div class="status-buttons-row">
+              <button 
+                type="button" 
+                class="state-btn" 
+                [class.active]="pedidoDetalle()?.estado === 'Pendiente'" 
+                (click)="avanzarEstado(pedidoDetalle()!, 'Pendiente')"
+              >
+                Pendiente
+              </button>
+              <button 
+                type="button" 
+                class="state-btn" 
+                [class.active]="pedidoDetalle()?.estado === 'En Horno'" 
+                (click)="avanzarEstado(pedidoDetalle()!, 'En Horno')"
+              >
+                En Horno
+              </button>
+              <button 
+                type="button" 
+                class="state-btn" 
+                [class.active]="pedidoDetalle()?.estado === 'Decorando'" 
+                (click)="avanzarEstado(pedidoDetalle()!, 'Decorando')"
+              >
+                Decorando
+              </button>
+              <button 
+                type="button" 
+                class="state-btn" 
+                [class.active]="pedidoDetalle()?.estado === 'Listo'" 
+                (click)="avanzarEstado(pedidoDetalle()!, 'Listo')"
+              >
+                Listo
+              </button>
+              <button 
+                type="button" 
+                class="state-btn" 
+                [class.active]="pedidoDetalle()?.estado === 'Entregado'" 
+                (click)="avanzarEstado(pedidoDetalle()!, 'Entregado')"
+              >
+                Entregado
+              </button>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4>Datos del Cliente</h4>
+            <div class="info-box">
+              <p><strong>Nombre:</strong> {{ pedidoDetalle()?.clienteNombre }}</p>
+              <p><strong>Teléfono:</strong> {{ pedidoDetalle()?.clienteTelefono }}</p>
+              <p><strong>Email:</strong> {{ pedidoDetalle()?.clienteEmail }}</p>
+              <p><strong>Método de Entrega:</strong> {{ pedidoDetalle()?.metodoEntrega }}</p>
+              @if (pedidoDetalle()?.direccionEntrega) {
+                <p><strong>Dirección:</strong> {{ pedidoDetalle()?.direccionEntrega }}</p>
+              }
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4>Productos a Hornear y Decorar</h4>
+            <div class="detail-table-wrap">
+              <table class="detail-table">
+                <thead>
+                  <tr>
+                    <th>Cant.</th>
+                    <th>Producto</th>
+                    <th>Notas del Cliente</th>
+                    <th>Importe</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (it of pedidoDetalle()?.items; track it.nombre) {
+                    <tr>
+                      <td><strong>{{ it.cantidad }}</strong></td>
+                      <td>{{ it.nombre }}</td>
+                      <td>
+                        @if (it.notas) {
+                          <span class="item-note">{{ it.notas }}</span>
+                        } @else {
+                          <span class="text-muted">Sin notas</span>
+                        }
+                      </td>
+                      <td>${{ it.importe }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          @if (pedidoDetalle()?.notasEspeciales) {
+            <div class="detail-section">
+              <h4>Dedicatoria / Instrucción Especial</h4>
+              <div class="note-box">
+                <span class="material-symbols-outlined">edit_note</span>
+                <span>{{ pedidoDetalle()?.notasEspeciales }}</span>
+              </div>
+            </div>
+          }
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn-modal-close" (click)="cerrarDetalle()">
+            <span>Guardar y Cerrar</span>
+          </button>
+        </footer>
+      </div>
+    </div>
+  }
+</div>
