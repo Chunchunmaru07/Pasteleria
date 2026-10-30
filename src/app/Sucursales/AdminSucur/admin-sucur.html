@@ -1,12 +1,13 @@
 <div class="sucursales-page-wrapper">
   <!-- Toast Notification -->
   @if (mensajeToast()) {
-    <div class="admin-toast-notification">
-      <span>{{ mensajeToast() }}</span>
-    </div>
+  <div class="admin-toast-notification">
+    <span>{{ mensajeToast() }}</span>
+  </div>
   }
 
   <!-- Barra de Conmutación de Roles -->
+  <!--
   <div class="role-selector-bar">
     <div class="role-selector-container">
       <div class="role-info">
@@ -31,6 +32,7 @@
       </div>
     </div>
   </div>
+  -->
 
   <div class="sucursales-container">
     <!-- Métricas Globales de las 5 Sucursales de Durango -->
@@ -39,7 +41,8 @@
         <span class="material-symbols-outlined stat-icon sales">payments</span>
         <div class="stat-meta">
           <span class="stat-label">Ventas Hoy (Todo Durango)</span>
-          <span class="stat-val">{{ sucursalesService.totalVentasHoyTodas() | currency: 'MXN' : 'symbol' : '1.0-0' }}</span>
+          <span class="stat-val">{{ sucursalesService.totalVentasHoyTodas() | currency: 'MXN' : 'symbol' : '1.0-0'
+            }}</span>
           <span class="stat-sub">5 pastelerías reportando</span>
         </div>
       </div>
@@ -74,42 +77,25 @@
 
     <!-- Pestañas del Panel de Administración -->
     <nav class="admin-tabs-nav" role="tablist">
-      <button
-        type="button"
-        class="admin-tab-btn"
-        [class.active]="adminTab() === 'inventario'"
-        (click)="adminTab.set('inventario')"
-      >
+      <button type="button" class="admin-tab-btn" [class.active]="adminTab() === 'inventario'"
+        (click)="adminTab.set('inventario')">
         <span class="material-symbols-outlined">inventory_2</span>
         <span>Ver Lo Que Hay en Cada Pastelería</span>
       </button>
 
-      <button
-        type="button"
-        class="admin-tab-btn"
-        [class.active]="adminTab() === 'traspasos'"
-        (click)="adminTab.set('traspasos')"
-      >
+      <button type="button" class="admin-tab-btn" [class.active]="adminTab() === 'traspasos'"
+        (click)="adminTab.set('traspasos')">
         <span class="material-symbols-outlined">sync_alt</span>
         <span>Traspasar Stock Entre Sucursales</span>
       </button>
 
-      <button
-        type="button"
-        class="admin-tab-btn"
-        [class.active]="adminTab() === 'chat'"
-        (click)="adminTab.set('chat')"
-      >
+      <button type="button" class="admin-tab-btn" [class.active]="adminTab() === 'chat'" (click)="adminTab.set('chat')">
         <span class="material-symbols-outlined">campaign</span>
         <span>Chat & Comunicados de Dirección</span>
       </button>
 
-      <button
-        type="button"
-        class="admin-tab-btn"
-        [class.active]="adminTab() === 'resumen'"
-        (click)="adminTab.set('resumen')"
-      >
+      <button type="button" class="admin-tab-btn" [class.active]="adminTab() === 'resumen'"
+        (click)="adminTab.set('resumen')">
         <span class="material-symbols-outlined">map</span>
         <span>Mapa de Monitoreo Territorial</span>
       </button>
@@ -119,312 +105,267 @@
     <!-- PESTAÑA 1: VER LO QUE HAY EN LAS OTRAS PASTELERÍAS (INVENTARIO) -->
     <!-- ================================================================= -->
     @if (adminTab() === 'inventario') {
-      <section class="admin-tab-section animate-fade-in">
-        <!-- Selector de Sucursal a Inspeccionar -->
-        <div class="branch-inspector-toolbar">
-          <div class="toolbar-left">
-            <span class="toolbar-label">
-              <span class="material-symbols-outlined">search</span>
-              Inspeccionar Pastelería:
-            </span>
-            <div class="branch-selector-pills">
-              @for (suc of sucursalesService.sucursales(); track suc.id) {
-                <button
-                  type="button"
-                  class="branch-pill-btn"
-                  [class.active]="suc.id === sucursalInspeccionadaId()"
-                  (click)="seleccionarParaInspeccion(suc.id)"
-                >
-                  <span class="pill-dot" [class.open]="suc.abierto"></span>
-                  <span>{{ suc.nombre }}</span>
-                  @if (suc.inventario.some(i => i.stock <= i.stockMinimo)) {
-                    <span class="badge-mini-alert">⚠️ Bajo</span>
-                  }
-                </button>
-              }
-            </div>
-          </div>
-
-          <div class="toolbar-right">
-            <button
-              type="button"
-              class="btn-toggle-branch"
-              [class.open]="sucursalInspeccionada().abierto"
-              (click)="toggleAperturaSucursal(sucursalInspeccionada().id)"
-            >
-              <span class="material-symbols-outlined">
-                {{ sucursalInspeccionada().abierto ? 'lock_open' : 'lock' }}
-              </span>
-              <span>{{ sucursalInspeccionada().abierto ? 'Sucursal Abierta' : 'Sucursal Cerrada' }}</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Ficha de la Sucursal Seleccionada -->
-        <div class="inspected-branch-overview">
-          <div class="overview-info">
-            <h2 class="overview-title">{{ sucursalInspeccionada().nombre }}</h2>
-            <p class="overview-address">
-              📍 {{ sucursalInspeccionada().direccion }} ({{ sucursalInspeccionada().zona }})
-            </p>
-            <div class="overview-meta-tags">
-              <span class="meta-tag">
-                <strong>Encargado:</strong> {{ sucursalInspeccionada().encargado }} ({{ sucursalInspeccionada().encargadoId }})
-              </span>
-              <span class="meta-tag">
-                <strong>Ventas de hoy:</strong> ${{ sucursalInspeccionada().ventasHoy.toLocaleString('es-MX') }} MXN
-              </span>
-              <span class="meta-tag">
-                <strong>Pedidos activos:</strong> {{ sucursalInspeccionada().pedidosActivos }} entregas
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tabla de Inventario de la Sucursal -->
-        <div class="inventory-table-card">
-          <div class="table-header-title">
-            <h3>Inventario en Tiempo Real • {{ sucursalInspeccionada().nombre }}</h3>
-            <span class="table-sub">Ajusta existencias o detecta productos por terminarse</span>
-          </div>
-
-          <div class="table-responsive">
-            <table class="inventory-table">
-              <thead>
-                <tr>
-                  <th>Producto</th>
-                  <th>Categoría</th>
-                  <th>Stock Actual</th>
-                  <th>Mínimo Recomendado</th>
-                  <th>Estado</th>
-                  <th>Precio Unitario</th>
-                  <th>Ajuste de Stock (Admin)</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (item of sucursalInspeccionada().inventario; track item.productoId) {
-                  <tr [class.row-critical]="item.stock <= item.stockMinimo">
-                    <td class="col-product">
-                      <span class="prod-bullet">🍰</span>
-                      <span class="prod-name">{{ item.productoNombre }}</span>
-                    </td>
-                    <td><span class="cat-pill">{{ item.categoria }}</span></td>
-                    <td class="col-stock">
-                      <span class="stock-number" [class.low]="item.stock <= item.stockMinimo">
-                        {{ item.stock }} pzas
-                      </span>
-                    </td>
-                    <td>{{ item.stockMinimo }} pzas</td>
-                    <td>
-                      @if (item.stock === 0) {
-                        <span class="status-pill agotado">AGOTADO</span>
-                      } @else if (item.stock <= item.stockMinimo) {
-                        <span class="status-pill bajo">⚠️ Stock Crítico</span>
-                      } @else {
-                        <span class="status-pill optimo">🟢 Óptimo</span>
-                      }
-                    </td>
-                    <td class="col-price">${{ item.precio }} MXN</td>
-                    <td class="col-actions">
-                      <div class="quick-stock-controls">
-                        <button
-                          type="button"
-                          class="btn-stock-dec"
-                          (click)="modificarStockItem(item.productoId, -1)"
-                          title="Restar 1 pza"
-                        >
-                          -
-                        </button>
-                        <button
-                          type="button"
-                          class="btn-stock-inc"
-                          (click)="modificarStockItem(item.productoId, 1)"
-                          title="Sumar 1 pza"
-                        >
-                          +
-                        </button>
-                        <button
-                          type="button"
-                          class="btn-stock-plus5"
-                          (click)="modificarStockItem(item.productoId, 5)"
-                          title="Sumar lote de 5 pzas"
-                        >
-                          +5
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+    <section class="admin-tab-section animate-fade-in">
+      <!-- Selector de Sucursal a Inspeccionar -->
+      <div class="branch-inspector-toolbar">
+        <div class="toolbar-left">
+          <span class="toolbar-label">
+            <span class="material-symbols-outlined">search</span>
+            Inspeccionar Pastelería:
+          </span>
+          <div class="branch-selector-pills">
+            @for (suc of sucursalesService.sucursales(); track suc.id) {
+            <button type="button" class="branch-pill-btn" [class.active]="suc.id === sucursalInspeccionadaId()"
+              (click)="seleccionarParaInspeccion(suc.id)">
+              <span class="pill-dot" [class.open]="suc.abierto"></span>
+              <span>{{ suc.nombre }}</span>
+              @if (suc.inventario.some(i => i.stock <= i.stockMinimo)) { <span class="badge-mini-alert">⚠️ Bajo</span>
                 }
-              </tbody>
-            </table>
+            </button>
+            }
           </div>
         </div>
-      </section>
+
+        <div class="toolbar-right">
+          <button type="button" class="btn-toggle-branch" [class.open]="sucursalInspeccionada().abierto"
+            (click)="toggleAperturaSucursal(sucursalInspeccionada().id)">
+            <span class="material-symbols-outlined">
+              {{ sucursalInspeccionada().abierto ? 'lock_open' : 'lock' }}
+            </span>
+            <span>{{ sucursalInspeccionada().abierto ? 'Sucursal Abierta' : 'Sucursal Cerrada' }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Ficha de la Sucursal Seleccionada -->
+      <div class="inspected-branch-overview">
+        <div class="overview-info">
+          <h2 class="overview-title">{{ sucursalInspeccionada().nombre }}</h2>
+          <p class="overview-address">
+            📍 {{ sucursalInspeccionada().direccion }} ({{ sucursalInspeccionada().zona }})
+          </p>
+          <div class="overview-meta-tags">
+            <span class="meta-tag">
+              <strong>Encargado:</strong> {{ sucursalInspeccionada().encargado }} ({{
+              sucursalInspeccionada().encargadoId }})
+            </span>
+            <span class="meta-tag">
+              <strong>Ventas de hoy:</strong> ${{ sucursalInspeccionada().ventasHoy.toLocaleString('es-MX') }} MXN
+            </span>
+            <span class="meta-tag">
+              <strong>Pedidos activos:</strong> {{ sucursalInspeccionada().pedidosActivos }} entregas
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de Inventario de la Sucursal -->
+      <div class="inventory-table-card">
+        <div class="table-header-title">
+          <h3>Inventario en Tiempo Real • {{ sucursalInspeccionada().nombre }}</h3>
+          <span class="table-sub">Ajusta existencias o detecta productos por terminarse</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="inventory-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Categoría</th>
+                <th>Stock Actual</th>
+                <th>Mínimo Recomendado</th>
+                <th>Estado</th>
+                <th>Precio Unitario</th>
+                <th>Ajuste de Stock (Admin)</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of sucursalInspeccionada().inventario; track item.productoId) {
+              <tr [class.row-critical]="item.stock <= item.stockMinimo">
+                <td class="col-product">
+                  <span class="prod-bullet">🍰</span>
+                  <span class="prod-name">{{ item.productoNombre }}</span>
+                </td>
+                <td><span class="cat-pill">{{ item.categoria }}</span></td>
+                <td class="col-stock">
+                  <span class="stock-number" [class.low]="item.stock <= item.stockMinimo">
+                    {{ item.stock }} pzas
+                  </span>
+                </td>
+                <td>{{ item.stockMinimo }} pzas</td>
+                <td>
+                  @if (item.stock === 0) {
+                  <span class="status-pill agotado">AGOTADO</span>
+                  } @else if (item.stock <= item.stockMinimo) { <span class="status-pill bajo">⚠️ Stock Crítico</span>
+                    } @else {
+                    <span class="status-pill optimo">🟢 Óptimo</span>
+                    }
+                </td>
+                <td class="col-price">${{ item.precio }} MXN</td>
+                <td class="col-actions">
+                  <div class="quick-stock-controls">
+                    <button type="button" class="btn-stock-dec" (click)="modificarStockItem(item.productoId, -1)"
+                      title="Restar 1 pza">
+                      -
+                    </button>
+                    <button type="button" class="btn-stock-inc" (click)="modificarStockItem(item.productoId, 1)"
+                      title="Sumar 1 pza">
+                      +
+                    </button>
+                    <button type="button" class="btn-stock-plus5" (click)="modificarStockItem(item.productoId, 5)"
+                      title="Sumar lote de 5 pzas">
+                      +5
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
     }
 
     <!-- ================================================================= -->
     <!-- PESTAÑA 2: TRASPASO DE STOCK ENTRE SUCURSALES -->
     <!-- ================================================================= -->
     @if (adminTab() === 'traspasos') {
-      <section class="admin-tab-section animate-fade-in">
-        <div class="transfer-card">
-          <div class="transfer-header">
-            <span class="material-symbols-outlined transfer-icon">sync_alt</span>
-            <div>
-              <h2 class="transfer-title">Transferencia de Productos Entre Sucursales de Durango</h2>
-              <p class="transfer-desc">
-                Equilibra el stock de tus pastelerías: descuenta automáticamente del inventario de origen, suma en la sucursal de destino y emite notificación automática en el chat inter-sucursales.
-              </p>
-            </div>
-          </div>
-
-          <div class="transfer-form-grid">
-            <!-- Producto a Traspasar -->
-            <div class="form-field">
-              <label for="traspasoProdSelect">Producto de Repostería a Transferir:</label>
-              <select
-                id="traspasoProdSelect"
-                [ngModel]="traspasoProdId()"
-                (ngModelChange)="traspasoProdId.set($event)"
-                class="admin-select"
-              >
-                @for (p of productosDisponibles(); track p.productoId) {
-                  <option [value]="p.productoId">{{ p.productoNombre }} ({{ p.categoria }})</option>
-                }
-              </select>
-            </div>
-
-            <!-- Cantidad a Traspasar -->
-            <div class="form-field">
-              <label for="traspasoCantInput">Cantidad de Piezas:</label>
-              <input
-                id="traspasoCantInput"
-                type="number"
-                min="1"
-                [max]="stockDisponibleOrigen()"
-                [ngModel]="traspasoCantidad()"
-                (ngModelChange)="traspasoCantidad.set($event)"
-                class="admin-input"
-              />
-              <span class="hint-text">
-                Stock disponible en origen: <strong>{{ stockDisponibleOrigen() }} piezas</strong>
-              </span>
-            </div>
-
-            <!-- Sucursal de Origen -->
-            <div class="form-field">
-              <label for="traspasoOrigenSelect">Pastelería de Origen (Envía):</label>
-              <select
-                id="traspasoOrigenSelect"
-                [ngModel]="traspasoOrigenId()"
-                (ngModelChange)="traspasoOrigenId.set($event)"
-                class="admin-select"
-              >
-                @for (s of sucursalesService.sucursales(); track s.id) {
-                  <option [value]="s.id">{{ s.nombre }}</option>
-                }
-              </select>
-            </div>
-
-            <!-- Sucursal de Destino -->
-            <div class="form-field">
-              <label for="traspasoDestinoSelect">Pastelería de Destino (Recibe):</label>
-              <select
-                id="traspasoDestinoSelect"
-                [ngModel]="traspasoDestinoId()"
-                (ngModelChange)="traspasoDestinoId.set($event)"
-                class="admin-select"
-              >
-                @for (s of sucursalesService.sucursales(); track s.id) {
-                  <option [value]="s.id">{{ s.nombre }}</option>
-                }
-              </select>
-            </div>
-          </div>
-
-          <div class="transfer-action-row">
-            <button
-              type="button"
-              class="btn-execute-transfer"
-              (click)="ejecutarTraspaso()"
-              [disabled]="traspasoOrigenId() === traspasoDestinoId() || traspasoCantidad() <= 0"
-            >
-              <span class="material-symbols-outlined">move_up</span>
-              <span>Ejecutar Traspaso Inmediato & Notificar</span>
-            </button>
+    <section class="admin-tab-section animate-fade-in">
+      <div class="transfer-card">
+        <div class="transfer-header">
+          <span class="material-symbols-outlined transfer-icon">sync_alt</span>
+          <div>
+            <h2 class="transfer-title">Transferencia de Productos Entre Sucursales de Durango</h2>
+            <p class="transfer-desc">
+              Equilibra el stock de tus pastelerías: descuenta automáticamente del inventario de origen, suma en la
+              sucursal de destino y emite notificación automática en el chat inter-sucursales.
+            </p>
           </div>
         </div>
-      </section>
+
+        <div class="transfer-form-grid">
+          <!-- Producto a Traspasar -->
+          <div class="form-field">
+            <label for="traspasoProdSelect">Producto de Repostería a Transferir:</label>
+            <select id="traspasoProdSelect" [ngModel]="traspasoProdId()" (ngModelChange)="traspasoProdId.set($event)"
+              class="admin-select">
+              @for (p of productosDisponibles(); track p.productoId) {
+              <option [value]="p.productoId">{{ p.productoNombre }} ({{ p.categoria }})</option>
+              }
+            </select>
+          </div>
+
+          <!-- Cantidad a Traspasar -->
+          <div class="form-field">
+            <label for="traspasoCantInput">Cantidad de Piezas:</label>
+            <input id="traspasoCantInput" type="number" min="1" [max]="stockDisponibleOrigen()"
+              [ngModel]="traspasoCantidad()" (ngModelChange)="traspasoCantidad.set($event)" class="admin-input" />
+            <span class="hint-text">
+              Stock disponible en origen: <strong>{{ stockDisponibleOrigen() }} piezas</strong>
+            </span>
+          </div>
+
+          <!-- Sucursal de Origen -->
+          <div class="form-field">
+            <label for="traspasoOrigenSelect">Pastelería de Origen (Envía):</label>
+            <select id="traspasoOrigenSelect" [ngModel]="traspasoOrigenId()"
+              (ngModelChange)="traspasoOrigenId.set($event)" class="admin-select">
+              @for (s of sucursalesService.sucursales(); track s.id) {
+              <option [value]="s.id">{{ s.nombre }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Sucursal de Destino -->
+          <div class="form-field">
+            <label for="traspasoDestinoSelect">Pastelería de Destino (Recibe):</label>
+            <select id="traspasoDestinoSelect" [ngModel]="traspasoDestinoId()"
+              (ngModelChange)="traspasoDestinoId.set($event)" class="admin-select">
+              @for (s of sucursalesService.sucursales(); track s.id) {
+              <option [value]="s.id">{{ s.nombre }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="transfer-action-row">
+          <button type="button" class="btn-execute-transfer" (click)="ejecutarTraspaso()"
+            [disabled]="traspasoOrigenId() === traspasoDestinoId() || traspasoCantidad() <= 0">
+            <span class="material-symbols-outlined">move_up</span>
+            <span>Ejecutar Traspaso Inmediato & Notificar</span>
+          </button>
+        </div>
+      </div>
+    </section>
     }
 
     <!-- ================================================================= -->
     <!-- PESTAÑA 3: CHAT INTER-SUCURSALES & AVISOS DE DIRECCIÓN -->
     <!-- ================================================================= -->
     @if (adminTab() === 'chat') {
-      <section class="admin-tab-section animate-fade-in">
-        <div class="admin-chat-layout">
-          <!-- Cuadro de Emitir Comunicado Oficial -->
-          <div class="admin-announcement-box">
-            <div class="announcement-header">
-              <span class="material-symbols-outlined ann-icon">campaign</span>
-              <h3>Emitir Comunicado Oficial a Todas las Sucursales</h3>
-            </div>
-            <p class="ann-desc">
-              Este mensaje aparecerá con prioridad destacada de Dirección General en la pantalla de todos los empleados de Durango.
-            </p>
-            <div class="ann-input-row">
-              <input
-                type="text"
-                placeholder="Escribe tu aviso administrativo (ej. Nuevas promociones, inspección de calidad, inventario mensual)..."
-                [ngModel]="avisoAdminTexto()"
-                (ngModelChange)="avisoAdminTexto.set($event)"
-                (keyup.enter)="enviarAvisoAdmin()"
-                class="admin-input"
-              />
-              <button type="button" class="btn-publish-ann" (click)="enviarAvisoAdmin()">
-                <span class="material-symbols-outlined">send</span>
-                <span>Publicar Aviso</span>
-              </button>
-            </div>
+    <section class="admin-tab-section animate-fade-in">
+      <div class="admin-chat-layout">
+        <!-- Cuadro de Emitir Comunicado Oficial -->
+        <div class="admin-announcement-box">
+          <div class="announcement-header">
+            <span class="material-symbols-outlined ann-icon">campaign</span>
+            <h3>Emitir Comunicado Oficial a Todas las Sucursales</h3>
           </div>
-
-          <!-- Historial Completo del Chat de Empleados -->
-          <div class="admin-chat-feed">
-            <h3 class="feed-title">Monitoreo del Chat Inter-Sucursales</h3>
-            <div class="feed-stream">
-              @for (msg of sucursalesService.chatMensajes(); track msg.id) {
-                <div class="feed-msg-card" [class.is-admin]="msg.tipo === 'aviso_admin'">
-                  <div class="msg-meta">
-                    <span class="msg-author">{{ msg.avatar }} {{ msg.empleadoNombre }} ({{ msg.empleadoId }})</span>
-                    <span class="msg-branch">📍 {{ msg.sucursalNombre }}</span>
-                    <span class="msg-time">{{ msg.fechaHora }}</span>
-                  </div>
-                  <div class="msg-text">{{ msg.texto }}</div>
-                </div>
-              }
-            </div>
+          <p class="ann-desc">
+            Este mensaje aparecerá con prioridad destacada de Dirección General en la pantalla de todos los empleados de
+            Durango.
+          </p>
+          <div class="ann-input-row">
+            <input type="text"
+              placeholder="Escribe tu aviso administrativo (ej. Nuevas promociones, inspección de calidad, inventario mensual)..."
+              [ngModel]="avisoAdminTexto()" (ngModelChange)="avisoAdminTexto.set($event)"
+              (keyup.enter)="enviarAvisoAdmin()" class="admin-input" />
+            <button type="button" class="btn-publish-ann" (click)="enviarAvisoAdmin()">
+              <span class="material-symbols-outlined">send</span>
+              <span>Publicar Aviso</span>
+            </button>
           </div>
         </div>
-      </section>
+
+        <!-- Historial Completo del Chat de Empleados -->
+        <div class="admin-chat-feed">
+          <h3 class="feed-title">Monitoreo del Chat Inter-Sucursales</h3>
+          <div class="feed-stream">
+            @for (msg of sucursalesService.chatMensajes(); track msg.id) {
+            <div class="feed-msg-card" [class.is-admin]="msg.tipo === 'aviso_admin'">
+              <div class="msg-meta">
+                <span class="msg-author">{{ msg.avatar }} {{ msg.empleadoNombre }} ({{ msg.empleadoId }})</span>
+                <span class="msg-branch">📍 {{ msg.sucursalNombre }}</span>
+                <span class="msg-time">{{ msg.fechaHora }}</span>
+              </div>
+              <div class="msg-text">{{ msg.texto }}</div>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
     }
 
     <!-- ================================================================= -->
     <!-- PESTAÑA 4: MAPA DE MONITOREO TERRITORIAL DE DURANGO -->
     <!-- ================================================================= -->
     @if (adminTab() === 'resumen') {
-      <section class="admin-tab-section animate-fade-in">
-        <div class="admin-map-card">
-          <div class="admin-map-header">
-            <div>
-              <h3 class="map-title">Monitoreo Territorial de Victoria de Durango</h3>
-              <span class="map-sub">Visualiza el estado operativo y alertas en tiempo real sobre el mapa de la ciudad</span>
-            </div>
+    <section class="admin-tab-section animate-fade-in">
+      <div class="admin-map-card">
+        <div class="admin-map-header">
+          <div>
+            <h3 class="map-title">Monitoreo Territorial de Victoria de Durango</h3>
+            <span class="map-sub">Visualiza el estado operativo y alertas en tiempo real sobre el mapa de la
+              ciudad</span>
           </div>
-
-          <!-- Mapa Leaflet -->
-          <div #mapContainer class="durango-admin-map"></div>
         </div>
-      </section>
+
+        <!-- Mapa Leaflet -->
+        <div #mapContainer class="durango-admin-map"></div>
+      </div>
+    </section>
     }
   </div>
 </div>

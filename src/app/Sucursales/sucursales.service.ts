@@ -1,4 +1,6 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { FacturacionService } from '../Facturacion/facturacion.service'; // Ajusta la ruta según tu estructura
 
 export interface InventarioItem {
   productoId: string;
@@ -119,7 +121,7 @@ const SUCURSALES_INICIALES: Sucursal[] = [
     ventasHoy: 14200,
     pedidosActivos: 5,
     inventario: [
-      { ...INVENTARIO_BASE[0], stock: 2 }, // Alerta de stock bajo!
+      { ...INVENTARIO_BASE[0], stock: 2 },
       { ...INVENTARIO_BASE[1], stock: 25 },
       { ...INVENTARIO_BASE[2], stock: 4 },
       { ...INVENTARIO_BASE[3], stock: 15 },
@@ -152,7 +154,7 @@ const SUCURSALES_INICIALES: Sucursal[] = [
     pedidosActivos: 4,
     inventario: [
       { ...INVENTARIO_BASE[0], stock: 5 },
-      { ...INVENTARIO_BASE[1], stock: 5 }, // Alerta de stock bajo!
+      { ...INVENTARIO_BASE[1], stock: 5 },
       { ...INVENTARIO_BASE[2], stock: 5 },
       { ...INVENTARIO_BASE[3], stock: 22 },
       { ...INVENTARIO_BASE[4], stock: 4 },
@@ -289,17 +291,94 @@ const MENSAJES_INICIALES: MensajeChat[] = [
   providedIn: 'root'
 })
 export class SucursalesService {
+  private http = inject(HttpClient);
+  private facturacionService = inject(FacturacionService);
+
   /** Lista reactiva de sucursales en Durango */
   readonly sucursales = signal<Sucursal[]>(this.cargarSucursales());
 
   /** Chat general entre todas las sucursales de Durango */
   readonly chatMensajes = signal<MensajeChat[]>(this.cargarChat());
 
-  /** Empleado activo seleccionado actualmente en el sistema */
-  readonly empleadoActivo = signal<Empleado>(this.getEmpleadoPorDefecto());
+  /** Empleado activo seleccionado actualmente o extraído directamente del inicio de sesión */
+  readonly empleadoActivo = signal<Empleado>(this.getEmpleadoInicial());
 
   /** Sucursal activa o seleccionada para ver detalles */
   readonly sucursalSeleccionadaId = signal<string>('suc-centro');
+
+  // =========================================================================
+  // INTEGRACIÓN REACTIVA CON EL ROL DEL USUARIO
+  // =========================================================================
+
+  /** Lee el rol actual desde FacturacionService */
+  readonly rolUsuarioActual = computed(() => {
+    return this.facturacionService.usuarioActual()?.rol || 'visitante';
+  });
+
+  /** Indica si el usuario conectado tiene perfil de Administrador */
+  readonly esAdmin = computed(() => this.rolUsuarioActual() === 'admin');
+
+  /** Indica si el usuario conectado es Personal Operativo (Trabajador o Admin) */
+  readonly esPersonalOp = computed(() => {
+    const rol = this.rolUsuarioActual();
+    return rol === 'admin' || rol === 'trabajador';
+  });
+
+  constructor() {
+    // Sincronizar el empleado que escribe en el chat cuando el usuario cambia de cuenta en la app
+    this.sincronizarEmpleadoConSesion();
+  }
+
+  /**
+   * Sincroniza dinámicamente los datos del empleado del chat
+   * con las credenciales activas ingresadas en el login.
+   */
+  private sincronizarEmpleadoConSesion(): void {
+    const usr = this.facturacionService.usuarioActual();
+    if (usr) {
+      const avatarMap: Record<string, string> = {
+        admin: '👑',
+        trabajador: '👨‍🍳',
+        cliente: '👤'
+      };
+
+      this.empleadoActivo.set({
+        id: usr.id ? `EMP-${usr.id}` : 'EMP-CURRENT',
+        nombre: usr.nombre || 'Colaborador Olenka',
+        rol: usr.rol === 'admin' ? 'Administración General' : (usr.rol === 'trabajador' ? 'Personal de Mostrador' : 'Cliente'),
+        sucursalId: 'suc-centro',
+        sucursalNombre: 'Centro Histórico',
+        avatar: avatarMap[usr.rol] || '🧑‍🍳'
+      });
+    }
+  }
+
+  private getEmpleadoInicial(): Empleado {
+    const usr = this.facturacionService.usuarioActual();
+    if (usr) {
+      return {
+        id: usr.id ? `EMP-${usr.id}` : 'EMP-CURRENT',
+        nombre: usr.nombre,
+        rol: usr.rol === 'admin' ? 'Administración General' : 'Personal de Mostrador',
+        sucursalId: 'suc-centro',
+        sucursalNombre: 'Centro Histórico',
+        avatar: usr.rol === 'admin' ? '👑' : '👨‍🍳'
+      };
+    }
+
+    return {
+      id: 'EMP-042',
+      nombre: 'Carlos Mendoza',
+      rol: 'Encargado de Sucursal',
+      sucursalId: 'suc-paseo',
+      sucursalNombre: 'Paseo Durango',
+      avatar: '👨‍💼'
+    };
+  }
+
+  // =========================================================================
+  // COMPUTEDS Y MÉTRICAS
+  // =========================================================================
 
   /** Sucursal actualmente seleccionada */
   readonly sucursalSeleccionada = computed(() => {
@@ -346,7 +425,7 @@ export class SucursalesService {
         const parsed = JSON.parse(guardadas);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
-    } catch {}
+    } catch { }
     return SUCURSALES_INICIALES;
   }
 
@@ -357,31 +436,20 @@ export class SucursalesService {
         const parsed = JSON.parse(guardado);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
-    } catch {}
+    } catch { }
     return MENSAJES_INICIALES;
   }
 
   private persistirSucursales(): void {
     try {
       localStorage.setItem(STORAGE_KEY_SUCURSALES, JSON.stringify(this.sucursales()));
-    } catch {}
+    } catch { }
   }
 
   private persistirChat(): void {
     try {
       localStorage.setItem(STORAGE_KEY_CHAT, JSON.stringify(this.chatMensajes()));
-    } catch {}
-  }
-
-  private getEmpleadoPorDefecto(): Empleado {
-    return {
-      id: 'EMP-042',
-      nombre: 'Carlos Mendoza',
-      rol: 'Encargado de Sucursal',
-      sucursalId: 'suc-paseo',
-      sucursalNombre: 'Paseo Durango',
-      avatar: '👨‍💼'
-    };
+    } catch { }
   }
 
   // =========================================================================
@@ -395,6 +463,9 @@ export class SucursalesService {
     productoRelacionado?: string
   ): void {
     if (!texto.trim()) return;
+
+    // Asegurar que use el usuario autenticado activo si existe
+    this.sincronizarEmpleadoConSesion();
 
     const emp = this.empleadoActivo();
     const ahora = new Date();
@@ -497,7 +568,7 @@ export class SucursalesService {
     return exito;
   }
 
-  /** Modificar stock directamente de una sucursal (para admin) */
+  /** Modificar stock directamente de una sucursal (para admin/trabajador) */
   modificarStockSucursal(sucursalId: string, productoId: string, nuevoStock: number): void {
     this.sucursales.update(lista => {
       return lista.map(s => {

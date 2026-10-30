@@ -1,9 +1,11 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { PedidosService, Pedido } from '../pedidos.service';
+import { Router, RouterLink } from '@angular/router';
+import { CatalogoService, Producto } from '../../Catalogo/catalogo.service';
+import { PedidosService, Pedido, PedidoItem } from '../pedidos.service';
 import { FacturacionService } from '../../Facturacion/facturacion.service';
+import { SucursalesService } from '../../Sucursales/sucursales.service';
 
 @Component({
   selector: 'app-cliente-pedidos',
@@ -12,70 +14,195 @@ import { FacturacionService } from '../../Facturacion/facturacion.service';
   templateUrl: './cliente.html',
   styleUrl: './cliente.css',
 })
-export class Cliente {
-  public pedidosService = inject(PedidosService);
-  public facturacionService = inject(FacturacionService);
+export class Clientes {
+  protected readonly catalogoService = inject(CatalogoService);
+  protected readonly pedidosService = inject(PedidosService);
+  protected readonly facturacionService = inject(FacturacionService);
+  protected readonly sucursalesService = inject(SucursalesService);
+  private readonly router = inject(Router);
 
-  // Filtro de estado
-  readonly filtroEstado = signal<string>('Todos');
+  /** Costo fijo de envío a domicilio (cámbialo a tu tarifa real) */
+  readonly COSTO_ENVIO_DOMICILIO = 45;
 
-  // Modal para detalle de pedido
-  readonly pedidoDetalle = signal<Pedido | null>(null);
+  /** Término de búsqueda */
+  readonly busqueda = signal('');
 
-  // Pedidos del cliente actual
-  readonly misPedidos = computed(() => {
-    const usuario = this.facturacionService.usuarioActual();
-    const lista = this.pedidosService.pedidosPorCliente(usuario?.id, usuario?.correo);
-    const estado = this.filtroEstado();
+  /** Categoría seleccionada para filtrar */
+  readonly categoriaFiltro = signal('Todos');
 
-    if (estado === 'Todos') return lista;
-    return lista.filter(p => p.estado === estado);
+  /** Modal para ver el resumen de los productos seleccionados */
+  readonly modalResumenAbierto = signal(false);
+
+  /** Mensaje de confirmación toast */
+  readonly mensajeToast = signal<string | null>(null);
+
+  // ----- Datos del pedido (se llenan en el modal) -----
+  readonly sucursalElegida = signal('');
+  readonly metodoEntrega = signal<'Sucursal' | 'Domicilio'>('Sucursal');
+  readonly direccionEntrega = signal('');
+  readonly metodoPago = signal<Pedido['metodoPago']>('Efectivo en Entrega');
+  readonly notasEspeciales = signal('');
+  readonly enviando = signal(false);
+
+  /** Sucursal elegida (si no eligió ninguna, la primera de la lista) */
+  readonly sucursalActual = computed(() => {
+    const lista = this.sucursalesService.sucursales();
+    return lista.find((s) => s.id === this.sucursalElegida()) ?? lista[0];
   });
 
-  // Métricas del cliente
-  readonly pedidosActivosCount = computed(() => {
-    const usuario = this.facturacionService.usuarioActual();
-    return this.pedidosService
-      .pedidosPorCliente(usuario?.id, usuario?.correo)
-      .filter(p => ['Pendiente', 'En Horno', 'Decorando', 'Listo'].includes(p.estado)).length;
+  readonly costoEnvio = computed(() =>
+    this.metodoEntrega() === 'Domicilio' ? this.COSTO_ENVIO_DOMICILIO : 0
+  );
+
+  readonly totalConEnvio = computed(
+    () => Math.round((this.catalogoService.totalMontoSeleccionado() + this.costoEnvio()) * 100) / 100
+  );
+
+  /** Lista de productos filtrados */
+  readonly productosFiltrados = computed(() => {
+    const termino = this.busqueda().trim().toLowerCase();
+    const cat = this.categoriaFiltro();
+    const todos = this.catalogoService.productos();
+
+    return todos.filter((p) => {
+      const coincideCat = cat === 'Todos' || p.categoria === cat;
+      const coincideTermino =
+        !termino ||
+        p.nombre.toLowerCase().includes(termino) ||
+        p.sabor.toLowerCase().includes(termino) ||
+        p.descripcion.toLowerCase().includes(termino);
+      return coincideCat && coincideTermino;
+    });
   });
 
-  readonly pedidosEntregadosCount = computed(() => {
-    const usuario = this.facturacionService.usuarioActual();
-    return this.pedidosService
-      .pedidosPorCliente(usuario?.id, usuario?.correo)
-      .filter(p => p.estado === 'Entregado').length;
+  /** Productos seleccionados actualmente */
+  readonly productosEnSeleccion = computed(() => {
+    const mapa = this.catalogoService.seleccion();
+    const resultado: { producto: Producto; cantidad: number; subtotal: number }[] = [];
+
+    for (const prod of this.catalogoService.productos()) {
+      const cant = mapa.get(prod.id) || 0;
+      if (cant > 0) {
+        resultado.push({
+          producto: prod,
+          cantidad: cant,
+          subtotal: prod.precio * cant,
+        });
+      }
+    }
+    return resultado;
   });
 
-  verDetalle(pedido: Pedido): void {
-    this.pedidoDetalle.set(pedido);
+  seleccionarProducto(producto: Producto): void {
+    if (producto.stock <= 0) return;
+    this.catalogoService.incrementarSeleccion(producto.id);
+    this.mostrarToast(`¡Agregaste 1 "${producto.nombre}" a tu selección!`);
   }
 
-  cerrarDetalle(): void {
-    this.pedidoDetalle.set(null);
+  incrementar(id: string): void {
+    this.catalogoService.incrementarSeleccion(id);
   }
 
-  getEstadoClass(estado: string): string {
-    switch (estado) {
-      case 'Pendiente': return 'status-pendiente';
-      case 'En Horno': return 'status-horno';
-      case 'Decorando': return 'status-decorando';
-      case 'Listo': return 'status-listo';
-      case 'Entregado': return 'status-entregado';
-      case 'Cancelado': return 'status-cancelado';
-      default: return '';
+  decrementar(id: string): void {
+    this.catalogoService.decrementarSeleccion(id);
+  }
+
+  obtenerCantidad(id: string): number {
+    return this.catalogoService.getCantidadSeleccionada(id);
+  }
+
+  abrirResumen(): void {
+    if (this.catalogoService.totalPiezasSeleccionadas() > 0) {
+      this.modalResumenAbierto.set(true);
     }
   }
 
-  getEstadoIcon(estado: string): string {
-    switch (estado) {
-      case 'Pendiente': return 'schedule';
-      case 'En Horno': return 'local_fire_department';
-      case 'Decorando': return 'palette';
-      case 'Listo': return 'check_circle';
-      case 'Entregado': return 'task_alt';
-      case 'Cancelado': return 'cancel';
-      default: return 'help';
+  cerrarResumen(): void {
+    this.modalResumenAbierto.set(false);
+  }
+
+  vaciarSeleccion(): void {
+    this.catalogoService.limpiarSeleccion();
+    this.cerrarResumen();
+    this.mostrarToast('Se ha vaciado tu selección');
+  }
+
+  // =========================================================================
+  // CONFIRMAR PEDIDO → se guarda en MySQL (tablas pedidos y lista_productos)
+  // =========================================================================
+  confirmarPedido(): void {
+    if (this.enviando()) return;
+
+    const usuario: any = this.facturacionService.usuarioActual();
+    if (!usuario) {
+      this.mostrarToast('⚠ Inicia sesión para hacer tu pedido.');
+      return;
     }
+
+    const sucursal = this.sucursalActual();
+    if (!sucursal) {
+      this.mostrarToast('⚠ Elige una sucursal.');
+      return;
+    }
+
+    if (this.metodoEntrega() === 'Domicilio' && !this.direccionEntrega().trim()) {
+      this.mostrarToast('⚠ Escribe la dirección de entrega.');
+      return;
+    }
+
+    const items: PedidoItem[] = this.productosEnSeleccion().map((i) => ({
+      productoId: i.producto.id,
+      nombre: i.producto.nombre,
+      cantidad: i.cantidad,
+      precioUnitario: i.producto.precio,
+      importe: i.subtotal,
+    }));
+
+    if (items.length === 0) return;
+
+    this.enviando.set(true);
+
+    this.pedidosService
+      .crearPedido({
+        clienteId: String(usuario.id),
+        clienteNombre: usuario.nombre || usuario.correo || '',
+        clienteTelefono: '',
+        clienteEmail: usuario.correo || '',
+        sucursalId: sucursal.id,
+        sucursalNombre: (sucursal as any).nombre,
+        fechaEntregaEstimada: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        items,
+        subtotal: this.catalogoService.totalMontoSeleccionado(),
+        costoEnvio: this.costoEnvio(),
+        total: this.totalConEnvio(),
+        metodoEntrega: this.metodoEntrega(),
+        direccionEntrega: this.metodoEntrega() === 'Domicilio' ? this.direccionEntrega().trim() : undefined,
+        metodoPago: this.metodoPago(),
+        estado: 'Pendiente',
+        notasEspeciales: this.notasEspeciales().trim() || undefined,
+      })
+      .subscribe({
+        next: (pedido) => {
+          this.enviando.set(false);
+          this.catalogoService.limpiarSeleccion();
+          this.catalogoService.cargarProductos(); // refresca el stock
+          this.notasEspeciales.set('');
+          this.direccionEntrega.set('');
+          this.cerrarResumen();
+          this.mostrarToast(`✓ ¡Pedido ${pedido.id} registrado!`);
+          this.router.navigate(['/mis-pedidos']);
+        },
+        error: (err) => {
+          this.enviando.set(false);
+          this.mostrarToast(`⚠ No se pudo registrar el pedido: ${this.catalogoService.mensajeDeError(err)}`);
+        },
+      });
+  }
+
+  private mostrarToast(mensaje: string): void {
+    this.mensajeToast.set(mensaje);
+    setTimeout(() => {
+      this.mensajeToast.set(null);
+    }, 3200);
   }
 }

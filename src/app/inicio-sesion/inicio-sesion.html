@@ -8,7 +8,7 @@
 
   <div class="login-main-container">
     <div class="login-card-dual">
-      <!-- Columna Izquierda: Información de la Pastelería & Ilustración -->
+      <!-- Columna Izquierda: Información de la Pastelería -->
       <aside class="login-brand-panel">
         <div class="brand-panel-overlay"></div>
         <div class="brand-panel-content">
@@ -20,11 +20,11 @@
           <div class="brand-heading-group">
             <h2 class="brand-title">Olenka Y Ezis</h2>
             <p class="brand-tagline">
-              Donde cada receta familiar cobra vida con el aroma a vainilla de Papantla, chocolate de metate y amor artesanal.
+              Donde cada receta familiar cobra vida con el aroma a vainilla de Papantla, chocolate de metate y amor
+              artesanal.
             </p>
           </div>
 
-          <!-- Beneficios / Características visuales -->
           <div class="brand-perks-list">
             <div class="perk-item">
               <div class="perk-icon-circle">
@@ -32,7 +32,7 @@
               </div>
               <div class="perk-info">
                 <strong>Facturación Inmediata CFDI 4.0</strong>
-                <p>Genera tus comprobantes fiscales al instante con tu ticket de mostrador.</p>
+                <p>Genera tus comprobantes fiscales al instante con el folio de tu ticket (TK-XXXX).</p>
               </div>
             </div>
 
@@ -51,13 +51,12 @@
                 <span class="material-symbols-outlined">storefront</span>
               </div>
               <div class="perk-info">
-                <strong>Panel de Mostrador & Sucursales</strong>
-                <p>Control de tickets por turno para trabajadores y auditoría para gerencia.</p>
+                <strong>Panel de Mostrador y Administración</strong>
+                <p>Control de ventas y stock para el personal, y gestión de catálogo y precios para gerencia.</p>
               </div>
             </div>
           </div>
 
-          <!-- Sello de frescura -->
           <div class="freshness-guarantee-pill">
             <span class="material-symbols-outlined">verified</span>
             <span>Horneo Diario · Ingredientes 100% Mexicanos</span>
@@ -67,7 +66,6 @@
 
       <!-- Columna Derecha: Formulario de Autenticación -->
       <section class="login-form-panel">
-        <!-- Encabezado del Formulario -->
         <header class="form-panel-header">
           <div class="cake-icon-chip">
             <span class="material-symbols-outlined">cake</span>
@@ -77,317 +75,215 @@
             {{ modoVista() === 'login' ? 'Iniciar Sesión' : 'Crea tu Cuenta' }}
           </h1>
           <p class="form-subtitle">
-            {{ modoVista() === 'login' 
-                ? 'Ingresa tus credenciales para acceder a tus pedidos y servicios.' 
-                : 'Únete a nuestra comunidad dulce y disfruta de promociones exclusivas.' }}
+            {{ modoVista() === 'login'
+            ? 'Ingresa tus credenciales para acceder a tus pedidos y servicios.'
+            : 'Únete a nuestra comunidad dulce y disfruta de promociones exclusivas.' }}
           </p>
         </header>
 
-        <!-- Selector de Pestañas: Iniciar Sesión / Registrarse -->
+        <!-- Pestañas -->
         <div class="tabs-nav-container">
-          <button 
-            type="button" 
-            class="tab-toggle-btn" 
-            [class.active]="modoVista() === 'login'" 
-            (click)="cambiarModo('login')"
-          >
+          <button type="button" class="tab-toggle-btn" [class.active]="modoVista() === 'login'"
+            (click)="cambiarModo('login')">
             <span class="material-symbols-outlined tab-icon">login</span>
             <span>Iniciar Sesión</span>
           </button>
-          <button 
-            type="button" 
-            class="tab-toggle-btn" 
-            [class.active]="modoVista() === 'registro'" 
-            (click)="cambiarModo('registro')"
-          >
+          <button type="button" class="tab-toggle-btn" [class.active]="modoVista() === 'registro'"
+            (click)="cambiarModo('registro')">
             <span class="material-symbols-outlined tab-icon">person_add</span>
             <span>Registrarse</span>
           </button>
         </div>
 
-        <!-- ================================================================
-             SELECTOR DE ROLES RÁPIDOS / DEMOSTRACIÓN (Cliente, Trabajador, Admin)
-             ================================================================ -->
-        @if (modoVista() === 'login') {
-          <div class="demo-role-quickselect">
-            <span class="demo-label">
-              <span class="material-symbols-outlined label-icon">key</span>
-              <span>Acceso Rápido por Perfil:</span>
-            </span>
-            <div class="demo-pills-row">
-              <button 
-                type="button" 
-                class="role-quick-btn client" 
-                [class.selected]="rolSeleccionado() === 'cliente'"
-                (click)="seleccionarRolDemo('cliente')"
-                title="Accede como Cliente"
-              >
-                <span class="material-symbols-outlined">person</span>
-                <span>Cliente</span>
-              </button>
-
-              <button 
-                type="button" 
-                class="role-quick-btn worker" 
-                [class.selected]="rolSeleccionado() === 'trabajador'"
-                (click)="seleccionarRolDemo('trabajador')"
-                title="Accede como Trabajador de Mostrador"
-              >
-                <span class="material-symbols-outlined">badge</span>
-                <span>Trabajador</span>
-              </button>
-
-              <button 
-                type="button" 
-                class="role-quick-btn admin" 
-                [class.selected]="rolSeleccionado() === 'admin'"
-                (click)="seleccionarRolDemo('admin')"
-                title="Accede como Administrador"
-              >
-                <span class="material-symbols-outlined">admin_panel_settings</span>
-                <span>Administrador</span>
-              </button>
-            </div>
-          </div>
-        }
-
-        <!-- MENSAJES DE ERROR O ÉXITO -->
+        <!-- Mensajes de error o éxito (vienen del campo "error" / "mensaje" del backend) -->
         @if (errorMessage()) {
-          <div class="alert-feedback error">
-            <span class="material-symbols-outlined">error</span>
-            <span>{{ errorMessage() }}</span>
-          </div>
+        <div class="alert-feedback error" role="alert">
+          <span class="material-symbols-outlined">error</span>
+          <span>{{ errorMessage() }}</span>
+        </div>
         }
 
         @if (successMessage()) {
-          <div class="alert-feedback success">
-            <span class="material-symbols-outlined">check_circle</span>
-            <span>{{ successMessage() }}</span>
-          </div>
+        <div class="alert-feedback success" role="status">
+          <span class="material-symbols-outlined">check_circle</span>
+          <span>{{ successMessage() }}</span>
+        </div>
         }
 
         <!-- ================================================================
-             FORMULARIO 1: INICIAR SESIÓN
+             FORMULARIO 1: INICIAR SESIÓN  →  POST /api/login
+             Body: { correo, contrasena }
              ================================================================ -->
         @if (modoVista() === 'login') {
-          <form class="auth-form" (ngSubmit)="onLoginSubmit()">
-            <div class="form-field-group">
-              <label for="loginEmail" class="field-label">Correo Electrónico</label>
+        <form class="auth-form" (ngSubmit)="onLoginSubmit()">
+          <div class="form-field-group">
+            <label for="loginEmail" class="field-label">Correo Electrónico</label>
+            <div class="input-icon-wrap">
+              <span class="material-symbols-outlined input-lead-icon">mail</span>
+              <input id="loginEmail" type="email" [ngModel]="emailInput()" (ngModelChange)="emailInput.set($event)"
+                name="correo" autocomplete="email" placeholder="ejemplo@olenkayezis.com" required class="sweet-input" />
+            </div>
+          </div>
+
+          <div class="form-field-group">
+            <div class="label-row-split">
+              <label for="loginPassword" class="field-label">Contraseña</label>
+            </div>
+            <div class="input-icon-wrap">
+              <span class="material-symbols-outlined input-lead-icon">lock</span>
+              <input id="loginPassword" [type]="mostrarContrasena() ? 'text' : 'password'" [ngModel]="passwordInput()"
+                (ngModelChange)="passwordInput.set($event)" name="contrasena" autocomplete="current-password"
+                placeholder="Ingresa tu clave de acceso" required class="sweet-input" />
+              <button type="button" class="btn-toggle-eye" (click)="toggleMostrarContrasena()"
+                [attr.aria-label]="mostrarContrasena() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                <span class="material-symbols-outlined">
+                  {{ mostrarContrasena() ? 'visibility_off' : 'visibility' }}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-options-row">
+            <label class="sweet-checkbox-label">
+              <input type="checkbox" [checked]="recordarSesion()" (change)="recordarSesion.set(!recordarSesion())"
+                class="sweet-checkbox" />
+              <span>Recordar mi sesión en este equipo</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn-submit-sweet" [disabled]="isLoading()">
+            @if (isLoading()) {
+            <span class="spinner-dot"></span>
+            <span>Iniciando sesión...</span>
+            } @else {
+            <span class="material-symbols-outlined">login</span>
+            <span>Ingresar a mi Cuenta</span>
+            }
+          </button>
+        </form>
+        }
+
+        <!-- ================================================================
+             FORMULARIO 2: REGISTRO  →  POST /api/registro
+             Body: { nombre, correo, telefono, rol, contrasena }
+             rol: 'cliente' (activo al instante) | 'trabajador' (queda pendiente)
+             ================================================================ -->
+        @if (modoVista() === 'registro') {
+        <form class="auth-form" (ngSubmit)="onRegistroSubmit()">
+          <div class="form-field-group">
+            <label for="regNombreInput" class="field-label">Nombre Completo *</label>
+            <div class="input-icon-wrap">
+              <span class="material-symbols-outlined input-lead-icon">person</span>
+              <input id="regNombreInput" type="text" [ngModel]="regNombre()" (ngModelChange)="regNombre.set($event)"
+                name="nombre" autocomplete="name" placeholder="Ej. Lucía Monroy Pérez" required class="sweet-input" />
+            </div>
+          </div>
+
+          <div class="form-row-duo">
+            <div class="form-field-group flex-1">
+              <label for="regEmailInput" class="field-label">Correo Electrónico *</label>
               <div class="input-icon-wrap">
                 <span class="material-symbols-outlined input-lead-icon">mail</span>
-                <input 
-                  id="loginEmail"
-                  type="email" 
-                  [ngModel]="emailInput()" 
-                  (ngModelChange)="emailInput.set($event)"
-                  name="email"
-                  placeholder="ejemplo@olenkayezis.com"
-                  required
-                  class="sweet-input"
-                />
+                <input id="regEmailInput" type="email" [ngModel]="regEmail()" (ngModelChange)="regEmail.set($event)"
+                  name="correo" autocomplete="email" placeholder="lucia@correo.com" required class="sweet-input" />
               </div>
             </div>
 
-            <div class="form-field-group">
-              <div class="label-row-split">
-                <label for="loginPassword" class="field-label">Contraseña</label>
-                <a href="javascript:void(0)" class="forgot-link">¿Olvidaste tu contraseña?</a>
+            <div class="form-field-group flex-1">
+              <label for="regTelInput" class="field-label">Teléfono / WhatsApp</label>
+              <div class="input-icon-wrap">
+                <span class="material-symbols-outlined input-lead-icon">phone</span>
+                <input id="regTelInput" type="tel" [ngModel]="regTelefono()" (ngModelChange)="regTelefono.set($event)"
+                  name="telefono" autocomplete="tel" placeholder="618 123 4567" class="sweet-input" />
               </div>
+            </div>
+          </div>
+
+          <div class="form-field-group">
+            <span class="field-label" id="tipoUsuarioLabel">Tipo de Usuario *</span>
+            <div class="role-selector-inline" role="radiogroup" aria-labelledby="tipoUsuarioLabel">
+              <label class="role-radio-chip" [class.selected]="regRol() === 'cliente'">
+                <input type="radio" name="rol" value="cliente" [checked]="regRol() === 'cliente'"
+                  (change)="regRol.set('cliente')" />
+                <span class="material-symbols-outlined">person</span>
+                <span>Cliente</span>
+              </label>
+              <label class="role-radio-chip" [class.selected]="regRol() === 'trabajador'">
+                <input type="radio" name="rol" value="trabajador" [checked]="regRol() === 'trabajador'"
+                  (change)="regRol.set('trabajador')" />
+                <span class="material-symbols-outlined">badge</span>
+                <span>Personal Mostrador</span>
+              </label>
+            </div>
+
+            <!-- El backend deja a los trabajadores en estado "pendiente" y avisa al administrador por correo -->
+            @if (regRol() === 'trabajador') {
+            <p class="field-hint info">
+              <span class="material-symbols-outlined">info</span>
+              <span>Las cuentas de personal deben ser aprobadas por Administración antes de poder iniciar sesión.
+                Te avisaremos cuando tu acceso esté activo.</span>
+            </p>
+            }
+          </div>
+
+          <div class="form-row-duo">
+            <div class="form-field-group flex-1">
+              <label for="regPassInput" class="field-label">Contraseña *</label>
               <div class="input-icon-wrap">
                 <span class="material-symbols-outlined input-lead-icon">lock</span>
-                <input 
-                  id="loginPassword"
-                  [type]="mostrarContrasena() ? 'text' : 'password'" 
-                  [ngModel]="passwordInput()" 
-                  (ngModelChange)="passwordInput.set($event)"
-                  name="password"
-                  placeholder="Ingresa tu clave de acceso"
-                  required
-                  class="sweet-input"
-                />
-                <button 
-                  type="button" 
-                  class="btn-toggle-eye" 
-                  (click)="toggleMostrarContrasena()" 
-                  title="Mostrar/Ocultar contraseña"
-                >
+                <input id="regPassInput" [type]="mostrarContrasena() ? 'text' : 'password'" [ngModel]="regPassword()"
+                  (ngModelChange)="regPassword.set($event)" name="contrasena" autocomplete="new-password" minlength="6"
+                  placeholder="Mínimo 6 caracteres" required class="sweet-input" />
+                <button type="button" class="btn-toggle-eye" (click)="toggleMostrarContrasena()"
+                  [attr.aria-label]="mostrarContrasena() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
                   <span class="material-symbols-outlined">
                     {{ mostrarContrasena() ? 'visibility_off' : 'visibility' }}
                   </span>
                 </button>
               </div>
+              @if (regPassword() && regPassword().length < 6) { <p class="field-hint error">
+                <span>Usa al menos 6 caracteres.</span>
+                </p>
+                }
             </div>
 
-            <div class="form-options-row">
-              <label class="sweet-checkbox-label">
-                <input 
-                  type="checkbox" 
-                  [checked]="recordarSesion()" 
-                  (change)="recordarSesion.set(!recordarSesion())"
-                  class="sweet-checkbox"
-                />
-                <span>Recordar mi sesión en este equipo</span>
-              </label>
-            </div>
-
-            <button type="submit" class="btn-submit-sweet" [disabled]="isLoading()">
-              @if (isLoading()) {
-                <span class="spinner-dot"></span>
-                <span>Iniciando sesión...</span>
-              } @else {
-                <span class="material-symbols-outlined">login</span>
-                <span>Ingresar a mi Cuenta</span>
-              }
-            </button>
-          </form>
-        }
-
-        <!-- ================================================================
-             FORMULARIO 2: REGISTRO DE CUENTA
-             ================================================================ -->
-        @if (modoVista() === 'registro') {
-          <form class="auth-form" (ngSubmit)="onRegistroSubmit()">
-            <div class="form-field-group">
-              <label for="regNombreInput" class="field-label">Nombre Completo *</label>
+            <div class="form-field-group flex-1">
+              <label for="regConfirmInput" class="field-label">Confirmar Contraseña *</label>
               <div class="input-icon-wrap">
-                <span class="material-symbols-outlined input-lead-icon">person</span>
-                <input 
-                  id="regNombreInput"
-                  type="text" 
-                  [ngModel]="regNombre()" 
-                  (ngModelChange)="regNombre.set($event)"
-                  name="regNombre"
-                  placeholder="Ej. Lucía Monroy Pérez"
-                  required
-                  class="sweet-input"
-                />
+                <span class="material-symbols-outlined input-lead-icon">lock_reset</span>
+                <input id="regConfirmInput" [type]="mostrarContrasena() ? 'text' : 'password'"
+                  [ngModel]="regConfirmPassword()" (ngModelChange)="regConfirmPassword.set($event)"
+                  name="confirmarContrasena" autocomplete="new-password" placeholder="Repite tu clave" required
+                  class="sweet-input" />
               </div>
-            </div>
-
-            <div class="form-row-duo">
-              <div class="form-field-group flex-1">
-                <label for="regEmailInput" class="field-label">Correo Electrónico *</label>
-                <div class="input-icon-wrap">
-                  <span class="material-symbols-outlined input-lead-icon">mail</span>
-                  <input 
-                    id="regEmailInput"
-                    type="email" 
-                    [ngModel]="regEmail()" 
-                    (ngModelChange)="regEmail.set($event)"
-                    name="regEmail"
-                    placeholder="lucia@correo.com"
-                    required
-                    class="sweet-input"
-                  />
-                </div>
-              </div>
-
-              <div class="form-field-group flex-1">
-                <label for="regTelInput" class="field-label">Teléfono / WhatsApp</label>
-                <div class="input-icon-wrap">
-                  <span class="material-symbols-outlined input-lead-icon">phone</span>
-                  <input 
-                    id="regTelInput"
-                    type="tel" 
-                    [ngModel]="regTelefono()" 
-                    (ngModelChange)="regTelefono.set($event)"
-                    name="regTelefono"
-                    placeholder="55 1234 5678"
-                    class="sweet-input"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="form-field-group">
-              <label class="field-label">Tipo de Usuario *</label>
-              <div class="role-selector-inline">
-                <label class="role-radio-chip" [class.selected]="regRol() === 'cliente'">
-                  <input 
-                    type="radio" 
-                    name="tipoUsuario" 
-                    value="cliente" 
-                    [checked]="regRol() === 'cliente'"
-                    (change)="regRol.set('cliente')"
-                  />
-                  <span class="material-symbols-outlined">person</span>
-                  <span>Cliente</span>
-                </label>
-                <label class="role-radio-chip" [class.selected]="regRol() === 'trabajador'">
-                  <input 
-                    type="radio" 
-                    name="tipoUsuario" 
-                    value="trabajador" 
-                    [checked]="regRol() === 'trabajador'"
-                    (change)="regRol.set('trabajador')"
-                  />
-                  <span class="material-symbols-outlined">badge</span>
-                  <span>Personal Mostrador</span>
-                </label>
-              </div>
-            </div>
-
-            <div class="form-row-duo">
-              <div class="form-field-group flex-1">
-                <label for="regPassInput" class="field-label">Contraseña *</label>
-                <div class="input-icon-wrap">
-                  <span class="material-symbols-outlined input-lead-icon">lock</span>
-                  <input 
-                    id="regPassInput"
-                    [type]="mostrarContrasena() ? 'text' : 'password'" 
-                    [ngModel]="regPassword()" 
-                    (ngModelChange)="regPassword.set($event)"
-                    name="regPassword"
-                    placeholder="Mínimo 6 caracteres"
-                    required
-                    class="sweet-input"
-                  />
-                </div>
-              </div>
-
-              <div class="form-field-group flex-1">
-                <label for="regConfirmInput" class="field-label">Confirmar Contraseña *</label>
-                <div class="input-icon-wrap">
-                  <span class="material-symbols-outlined input-lead-icon">lock_reset</span>
-                  <input 
-                    id="regConfirmInput"
-                    [type]="mostrarContrasena() ? 'text' : 'password'" 
-                    [ngModel]="regConfirmPassword()" 
-                    (ngModelChange)="regConfirmPassword.set($event)"
-                    name="regConfirmPassword"
-                    placeholder="Repite tu clave"
-                    required
-                    class="sweet-input"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="form-options-row">
-              <label class="sweet-checkbox-label">
-                <input 
-                  type="checkbox" 
-                  [checked]="regAceptaTerminos()" 
-                  (change)="regAceptaTerminos.set(!regAceptaTerminos())"
-                  class="sweet-checkbox"
-                />
-                <span>Acepto los Términos de Servicio y el Aviso de Privacidad</span>
-              </label>
-            </div>
-
-            <button type="submit" class="btn-submit-sweet" [disabled]="isLoading()">
-              @if (isLoading()) {
-                <span class="spinner-dot"></span>
-                <span>Creando cuenta...</span>
-              } @else {
-                <span class="material-symbols-outlined">person_add</span>
-                <span>Registrar mi Cuenta</span>
+              @if (regConfirmPassword() && regConfirmPassword() !== regPassword()) {
+              <p class="field-hint error">
+                <span>Las contraseñas no coinciden.</span>
+              </p>
               }
-            </button>
-          </form>
+            </div>
+          </div>
+
+          <div class="form-options-row">
+            <label class="sweet-checkbox-label">
+              <input type="checkbox" [checked]="regAceptaTerminos()"
+                (change)="regAceptaTerminos.set(!regAceptaTerminos())" class="sweet-checkbox" />
+              <span>Acepto los Términos de Servicio y el Aviso de Privacidad</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn-submit-sweet" [disabled]="isLoading()">
+            @if (isLoading()) {
+            <span class="spinner-dot"></span>
+            <span>Creando cuenta...</span>
+            } @else {
+            <span class="material-symbols-outlined">person_add</span>
+            <span>{{ regRol() === 'trabajador' ? 'Solicitar acceso' : 'Registrar mi Cuenta' }}</span>
+            }
+          </button>
+        </form>
         }
 
-        <!-- Pie del Formulario: Volver al inicio -->
         <footer class="form-panel-footer">
           <a routerLink="/inicio" class="back-home-link">
             <span class="material-symbols-outlined">arrow_back</span>

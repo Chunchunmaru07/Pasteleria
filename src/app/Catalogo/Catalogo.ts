@@ -1,19 +1,20 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CatalogoService } from './catalogo.service'; // Ajusta la ruta a tu servicio
+
+// Importa la directiva reutilizable desde shared
 import { HasRoleDirective } from '../shared/has-role.directive';
+
+// Importa los componentes de las subcarpetas del catálogo
+import { Admins } from './admin/admin';
+import { Clientes } from './clientes/clientes';
+import { Trabajadores } from './trabajadores/trabajadores';
+
 @Component({
     selector: 'app-catalogo',
     standalone: true,
-    imports: [CommonModule, HasRoleDirective],
-    templateUrl: './catalogo.html',
+    // Declara la directiva y los componentes para poder usarlos en el HTML
+    imports: [CommonModule, HasRoleDirective, Admins, Clientes, Trabajadores],
+    templateUrl: './Catalogo.html',
     styleUrl: './Catalogo.css'
 })
-export class CatalogoComponent implements OnInit {
-    protected readonly catalogoService = inject(CatalogoService);
-
-    ngOnInit(): void {
-        // Forzamos la llamada a MySQL Aiven al cargar el componente
-        this.catalogoService.cargarProductos();
-    }
-}
+export class Catalogo { }

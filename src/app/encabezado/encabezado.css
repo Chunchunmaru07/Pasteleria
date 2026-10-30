@@ -253,6 +253,39 @@
     box-shadow: 0 4px 12px rgba(17, 122, 101, 0.22);
 }
 
+/* Botón: Ver Pedidos para Trabajadores/Admin (Naranja Cempasúchil) */
+.staff-orders-link {
+    border: 1.5px solid rgba(211, 84, 0, 0.4);
+    background: #FFFFFF;
+    color: var(--color-accent, #D35400);
+    padding: 8px 16px;
+    box-shadow: 0 2px 8px rgba(44, 24, 16, 0.05);
+}
+
+.staff-orders-link .link-icon {
+    color: var(--color-accent, #D35400);
+}
+
+.staff-orders-link:hover {
+    background: #FEF5E7;
+    border-color: var(--color-accent, #D35400);
+    color: #A04000;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(211, 84, 0, 0.22);
+}
+
+.staff-orders-link:hover .link-icon {
+    color: #A04000;
+    transform: translateY(-1px);
+}
+
+.staff-orders-link.active {
+    background: #FEF5E7;
+    border-color: var(--color-accent, #D35400);
+    color: #A04000;
+    font-weight: 700;
+}
+
 /* Botón: Iniciar Sesión / Registro (Rosa Mexicano Intenso) */
 .login-link {
     background: linear-gradient(135deg, #C2185B 0%, #D81B60 50%, #AD1457 100%);

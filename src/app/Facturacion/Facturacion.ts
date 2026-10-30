@@ -15,4 +15,4 @@ import { Trabajador } from './trabajador/trabajador';
     imports: [CommonModule, HasRoleDirective, Admin, Cliente, Trabajador],
     templateUrl: './facturacion.html'
 })
-export class FacturacionComponent { }
+export class FacturacionComponent { } 

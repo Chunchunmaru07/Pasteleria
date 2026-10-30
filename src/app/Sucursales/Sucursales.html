@@ -1,8 +1,8 @@
-<!-- Vista general para todos los usuarios -->
-<!--<app-mapa-sucursales></app-mapa-sucursales>-->
+<!-- Muestra la vista de la carpeta 'AdminSucur' solo si el rol es admin -->
+<app-admin-sucur *hasRole="'admin'"></app-admin-sucur>
 
-<!-- Solo el Administrador ve los botones de gestión -->
-<div *hasRole="'admin'">
-    <button>+ Agregar Nueva Sucursal</button>
-    <button>Editar Horarios</button>
-</div>
+<!-- Muestra la vista de la carpeta 'TrabajadorSucur' si el rol es trabajador -->
+<app-trabajador-sucur *hasRole="'trabajador'"></app-trabajador-sucur>
+
+<!-- Muestra la vista de la carpeta 'ClienteSucur' si el rol es cliente -->
+<app-cliente-sucur *hasRole="'cliente'"></app-cliente-sucur>

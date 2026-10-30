@@ -15,6 +15,8 @@ import { RouterLink } from '@angular/router';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CatalogoService } from '../Catalogo/catalogo.service';
+import { HttpClient } from '@angular/common/http';
+
 
 export interface CakePreset {
   id: string;
@@ -78,6 +80,8 @@ export class DisenaElTuyo implements AfterViewInit, OnDestroy {
   private spotLight!: THREE.SpotLight;
   private candleLight!: THREE.PointLight;
   private clock = new THREE.Clock();
+  //Inyeccion http
+  private http = inject(HttpClient);
 
   // Audio Context for sound effects
   private audioCtx: AudioContext | null = null;
@@ -661,14 +665,15 @@ export class DisenaElTuyo implements AfterViewInit, OnDestroy {
     while (this.cakeGroup.children.length > 0) {
       const child = this.cakeGroup.children[0];
       this.cakeGroup.remove(child);
-      if ((child as any).geometry) (child as any).geometry.dispose();
-      if ((child as any).material) {
-        if (Array.isArray((child as any).material)) {
-          (child as any).material.forEach((m: any) => m.dispose());
-        } else {
-          (child as any).material.dispose();
-        }
-      }
+      // traverse: los Group (drip, toppings, bordes) no tienen geometry propia;
+      // hay que liberar la de cada Mesh hija o se acumula memoria GPU en cada rebuild.
+      child.traverse((obj) => {
+        const mesh = obj as THREE.Mesh;
+        if (mesh.geometry) mesh.geometry.dispose();
+        const mat = mesh.material as THREE.Material | THREE.Material[] | undefined;
+        if (Array.isArray(mat)) mat.forEach((m) => m.dispose());
+        else if (mat) mat.dispose();
+      });
     }
 
     const pisos = this.pisosCount();
@@ -813,27 +818,21 @@ export class DisenaElTuyo implements AfterViewInit, OnDestroy {
     } else if (forma === 'hexagonal') {
       geom = new THREE.CylinderGeometry(r, r, h, 6, 1, false, thetaStart, thetaLength);
     } else if (forma === 'corazon') {
-      // Extruded 3D Heart
-      const heartShape = new THREE.Shape();
-      const s = r * 0.95;
-      heartShape.moveTo(0, s * 0.25);
-      heartShape.bezierCurveTo(0, s * 0.25, -s * 0.45, s * 0.9, -s * 0.95, s * 0.9);
-      heartShape.bezierCurveTo(-s * 1.4, s * 0.9, -s * 1.4, s * 0.35, -s * 1.4, s * 0.35);
-      heartShape.bezierCurveTo(-s * 1.4, -s * 0.2, -s * 0.9, -s * 0.65, 0, -s * 1.25);
-      heartShape.bezierCurveTo(s * 0.9, -s * 0.65, s * 1.4, -s * 0.2, s * 1.4, s * 0.35);
-      heartShape.bezierCurveTo(s * 1.4, s * 0.35, s * 1.4, s * 0.9, s * 0.95, s * 0.9);
-      heartShape.bezierCurveTo(s * 0.45, s * 0.9, 0, s * 0.25, 0, s * 0.25);
-
-      geom = new THREE.ExtrudeGeometry(heartShape, {
-        depth: h,
+      // Extruded 3D Heart. El contorno sale de createHeartShape() (ya centrado),
+      // la MISMA fuente que usa el drip, así que ambos coinciden siempre.
+      const bevel = this.HEART_BEVEL;
+      const depth = h - 2 * bevel; // el bisel suma 2*bevel => altura total exacta = h
+      geom = new THREE.ExtrudeGeometry(this.createHeartShape(r), {
+        depth,
         bevelEnabled: true,
         bevelSegments: 4,
         steps: 1,
-        bevelSize: 0.05,
-        bevelThickness: 0.05,
+        bevelSize: bevel,
+        bevelThickness: bevel,
+        bevelOffset: -bevel, // pared exactamente sobre el contorno (sin esto sobresale `bevel`)
       });
-      geom.rotateX(Math.PI / 2);
-      geom.center();
+      geom.rotateX(Math.PI / 2); // y del shape -> +z
+      geom.translate(0, depth / 2, 0); // centra en vertical: y ∈ [-h/2, h/2]
     } else {
       // Cilindro redondo tradicional
       geom = new THREE.CylinderGeometry(r, r, h, 48, 1, false, thetaStart, thetaLength);
@@ -885,6 +884,84 @@ export class DisenaElTuyo implements AfterViewInit, OnDestroy {
   }
 
   // =========================================================================
+  // CONTORNOS (fuente única de verdad para piso, drip y bordes)
+  // =========================================================================
+  private readonly HEART_BEVEL = 0.05;
+
+  /** Contorno del corazón ya centrado en el origen (centro de su bounding box). */
+  private createHeartShape(r: number): THREE.Shape {
+    const s = r * 0.95;
+    const cy = (s * 0.9 + -s * 1.25) / 2; // centro vertical del contorno
+    const y = (v: number) => v - cy;
+    const shape = new THREE.Shape();
+    shape.moveTo(0, y(s * 0.25));
+    shape.bezierCurveTo(0, y(s * 0.25), -s * 0.45, y(s * 0.9), -s * 0.95, y(s * 0.9));
+    shape.bezierCurveTo(-s * 1.4, y(s * 0.9), -s * 1.4, y(s * 0.35), -s * 1.4, y(s * 0.35));
+    shape.bezierCurveTo(-s * 1.4, y(-s * 0.2), -s * 0.9, y(-s * 0.65), 0, y(-s * 1.25));
+    shape.bezierCurveTo(s * 0.9, y(-s * 0.65), s * 1.4, y(-s * 0.2), s * 1.4, y(s * 0.35));
+    shape.bezierCurveTo(s * 1.4, y(s * 0.35), s * 1.4, y(s * 0.9), s * 0.95, y(s * 0.9));
+    shape.bezierCurveTo(s * 0.45, y(s * 0.9), 0, y(s * 0.25), 0, y(s * 0.25));
+    return shape;
+  }
+  private getTierOutline(
+    forma: string,
+    r: number,
+    corte: boolean
+  ): { points: THREE.Vector2[]; closed: boolean } {
+    const points: THREE.Vector2[] = [];
+
+    if (forma === 'cuadrado') {
+      const half = (r * 1.7) / 2;
+      const corners = [
+        [-half, -half],
+        [half, -half],
+        [half, half],
+        [-half, half],
+      ];
+      const perEdge = 25;
+      for (let e = 0; e < 4; e++) {
+        const [x1, z1] = corners[e];
+        const [x2, z2] = corners[(e + 1) % 4];
+        for (let i = 0; i < perEdge; i++) {
+          points.push(new THREE.Vector2(x1 + ((x2 - x1) * i) / perEdge, z1 + ((z2 - z1) * i) / perEdge));
+        }
+      }
+      return { points, closed: true }; // el cuadrado no se corta en createTierGeometry
+    }
+
+    if (forma === 'corazon') {
+      const pts = this.createHeartShape(r).getSpacedPoints(100);
+      // En un contorno cerrado el último punto repite al primero
+      if (pts.length > 1 && pts[0].distanceTo(pts[pts.length - 1]) < 1e-6) pts.pop();
+      pts.forEach((p) => points.push(new THREE.Vector2(p.x, p.y)));
+      return { points, closed: true }; // el corazón tampoco se corta
+    }
+
+    // Cilindro y hexágono: mismo barrido angular que en createTierGeometry
+    const thetaStart = corte ? Math.PI * 0.18 : 0;
+    const thetaLength = corte ? Math.PI * 1.65 : Math.PI * 2;
+    const at = (t: number) => {
+      const th = thetaStart + t * thetaLength;
+      return new THREE.Vector2(Math.sin(th) * r, Math.cos(th) * r);
+    };
+
+    if (forma === 'hexagonal') {
+      const sides = 6;
+      const perEdge = 17;
+      for (let s = 0; s < sides; s++) {
+        const a = at(s / sides);
+        const b = at((s + 1) / sides);
+        for (let i = 0; i < perEdge; i++) points.push(new THREE.Vector2().lerpVectors(a, b, i / perEdge));
+      }
+    } else {
+      const n = 96;
+      for (let i = 0; i < n; i++) points.push(at(i / n));
+    }
+    if (corte) points.push(at(1)); // arco abierto: cerramos en el borde del corte
+    return { points, closed: !corte };
+  }
+
+  // =========================================================================
   // DRIP MESH GENERATION (Gotas 3D de Cobertura)
   // =========================================================================
   private createDripMesh(forma: string, r: number, topY: number): THREE.Group {
@@ -904,19 +981,41 @@ export class DisenaElTuyo implements AfterViewInit, OnDestroy {
       clearcoat: 0.8,
     });
 
-    // Top ring rim
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(r - 0.02, 0.045, 12, 48), dripMat);
-    rim.rotation.x = Math.PI / 2;
-    rim.position.y = -0.01;
-    group.add(rim);
+    // Contorno EXACTO del piso (misma fuente que createTierGeometry)
+    const { points, closed } = this.getTierOutline(forma, r, this.modoCorte());
+    const n = points.length;
 
-    // Droplets around the perimeter
-    const dropCount = Math.floor(r * 14);
-    for (let i = 0; i < dropCount; i++) {
-      // In modo corte, skip the cutaway sector
-      if (this.modoCorte() && i < dropCount * 0.18) continue;
+    // Anillo superior
+    const curvePoints = points.map((p) => new THREE.Vector3(p.x, -0.01, p.y));
+    const rimPath = new THREE.CatmullRomCurve3(curvePoints, closed);
+    const rimGeom = new THREE.TubeGeometry(rimPath, n, 0.045, 8, closed);
+    group.add(new THREE.Mesh(rimGeom, dripMat));
 
-      const angle = (i / dropCount) * Math.PI * 2;
+    // Sentido del contorno (shoelace): define de qué lado queda "hacia afuera"
+    let area = 0;
+    for (let i = 0; i < n; i++) {
+      const a = points[i];
+      const b = points[(i + 1) % n];
+      area += a.x * b.y - b.x * a.y;
+    }
+    const side = area >= 0 ? 1 : -1;
+
+    const dropCount = Math.max(1, Math.floor(r * 14));
+    const step = Math.max(1, Math.round(n / dropCount));
+    for (let i = 0; i < n; i += step) {
+      const p = points[i];
+      const prev = points[closed ? (i - 1 + n) % n : Math.max(i - 1, 0)];
+      const next = points[closed ? (i + 1) % n : Math.min(i + 1, n - 1)];
+      const tx = next.x - prev.x;
+      const tz = next.y - prev.y;
+      const len = Math.hypot(tx, tz) || 1;
+      const nx = (side * tz) / len; // normal exterior X
+      const nz = (-side * tx) / len; // normal exterior Z
+
+      // Mover la gota ligeramente hacia afuera para que caiga sobre el borde exacto
+      const dropX = p.x + nx * 0.015;
+      const dropZ = p.y + nz * 0.015;
+
       // Vary droplet lengths procedurally
       const length = 0.08 + Math.sin(i * 3.7) * 0.12 + (i % 3 === 0 ? 0.18 : 0.02);
       const dropRadius = 0.035;
@@ -925,13 +1024,11 @@ export class DisenaElTuyo implements AfterViewInit, OnDestroy {
         new THREE.CylinderGeometry(dropRadius * 0.7, dropRadius, length, 8),
         dripMat
       );
-      const x = Math.cos(angle) * (r + 0.01);
-      const z = Math.sin(angle) * (r + 0.01);
-      dropMesh.position.set(x, -length / 2, z);
+      dropMesh.position.set(dropX, -length / 2, dropZ);
 
       // Droplet rounded bottom
       const bulb = new THREE.Mesh(new THREE.SphereGeometry(dropRadius * 1.15, 8, 8), dripMat);
-      bulb.position.set(x, -length, z);
+      bulb.position.set(dropX, -length, dropZ);
 
       group.add(dropMesh);
       group.add(bulb);
@@ -1728,4 +1825,64 @@ export class DisenaElTuyo implements AfterViewInit, OnDestroy {
       this.toastMensaje.set(null);
     }, 4000);
   }
+  async guardarDisenoConImagen() {
+    // 1. Verificar que exista una captura de imagen
+    const imagenBase64 = this.modalFotoCapturada();
+    if (!imagenBase64) {
+      this.toastMensaje.set('Por favor, toma una Foto HD primero antes de guardar.');
+      return;
+    }
+
+    try {
+      // 2. Convertir el texto Base64 de la imagen a un archivo real (Blob)
+      const respuestaFetch = await fetch(imagenBase64);
+      const blobImagen = await respuestaFetch.blob();
+
+      // 3. Crear el objeto JSON con toda la configuración del pastel
+      const configuracionPastel = {
+        pisos: this.pisosCount(),
+        forma: this.forma(),
+        altura: this.alturaPiso(),
+        saborBizcocho: this.saborBizcocho(),
+        saborRelleno: this.saborRelleno(),
+        glaseado: {
+          tipo: this.tipoGlaseado(),
+          colorHex: this.colorGlaseado(),
+          drip: this.dripSabor()
+        },
+        toppings: {
+          fresas: this.toppingFresas(),
+          cerezas: this.toppingCerezas(),
+          miniConchas: this.toppingMiniConchas(),
+          macarons: this.toppingMacarons(),
+          rosas: this.toppingRosas() ? this.colorRosas() : null,
+          sprinkles: this.toppingSprinkles()
+        },
+        topper: this.tipoTopper(),
+        placa: this.tienePlaca() ? this.textoPlaca() : null,
+        precioTotal: this.precioCalculado()
+      };
+
+      // 4. Empaquetar la imagen y el JSON usando FormData
+      const formData = new FormData();
+      formData.append('imagen_referencia', blobImagen, 'pastel_captura.png');
+      formData.append('configuracion', JSON.stringify(configuracionPastel));
+
+      // 5. Enviar el FormData a tu backend
+      this.http.post('  https://tu-api.com/api/guardar-diseno', formData).subscribe({
+        next: (respuesta: any) => {
+          this.toastMensaje.set('¡Diseño y foto guardados con éxito!');
+          this.modalFotoCapturada.set(null); // Cerrar el modal tras guardar
+        },
+        error: (error: any) => {
+          console.error('Error al guardar el diseño', error);
+          this.toastMensaje.set('Hubo un error al guardar tu diseño.');
+        }
+      });
+
+    } catch (error) {
+      console.error('Error al procesar la imagen', error);
+    }
+  }
 }
+

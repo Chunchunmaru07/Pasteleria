@@ -18,6 +18,9 @@ export class Admins {
   readonly categoriaFiltro = signal('Todos');
   readonly mensajeToast = signal<string | null>(null);
 
+  /** Evita doble clic mientras se guarda un nuevo producto */
+  readonly guardando = signal(false);
+
   /** Producto seleccionado para confirmar eliminación */
   readonly productoAEliminar = signal<Producto | null>(null);
 
@@ -71,7 +74,7 @@ export class Admins {
   });
 
   // =========================================================================
-  // GESTIÓN DE PRECIO (CAMBIAR PRECIO) - EXCLUSIVO ADMINISTRADOR
+  // GESTIÓN DE PRECIO - EXCLUSIVO ADMINISTRADOR
   // =========================================================================
 
   getValorInputPrecio(prod: Producto): number {
@@ -92,25 +95,30 @@ export class Admins {
     const valor = editando[producto.id] !== undefined ? editando[producto.id] : producto.precio;
     const finalPrecio = Math.max(0, Math.round(valor * 100) / 100);
 
-    this.catalogoService.actualizarPrecio(producto.id, finalPrecio);
-
-    this.precioEnEdicion.update((prev) => {
-      const copia = { ...prev };
-      delete copia[producto.id];
-      return copia;
+    this.catalogoService.actualizarPrecio(producto.id, finalPrecio).subscribe({
+      next: () => {
+        this.precioEnEdicion.update((prev) => {
+          const copia = { ...prev };
+          delete copia[producto.id];
+          return copia;
+        });
+        this.mostrarToast(`✓ Precio de "${producto.nombre}" actualizado a $${finalPrecio} MXN`);
+      },
+      error: (err) => this.mostrarToast(`⚠ No se pudo cambiar el precio: ${this.catalogoService.mensajeDeError(err)}`),
     });
-
-    this.mostrarToast(`✓ Precio de "${producto.nombre}" actualizado a $${finalPrecio} MXN`);
   }
 
   // =========================================================================
-  // GESTIÓN DE STOCK (CANTIDAD DISPONIBLE)
+  // GESTIÓN DE STOCK
   // =========================================================================
 
   ajustarStock(producto: Producto, delta: number): void {
     const nuevo = Math.max(0, producto.stock + delta);
-    this.catalogoService.actualizarStock(producto.id, nuevo);
-    this.mostrarToast(`Stock de "${producto.nombre}" actualizado a ${nuevo} piezas`);
+
+    this.catalogoService.actualizarStock(producto.id, nuevo).subscribe({
+      next: () => this.mostrarToast(`Stock de "${producto.nombre}" actualizado a ${nuevo} piezas`),
+      error: (err) => this.mostrarToast(`⚠ No se pudo actualizar el stock: ${this.catalogoService.mensajeDeError(err)}`),
+    });
   }
 
   getValorInputStock(prod: Producto): number {
@@ -131,15 +139,17 @@ export class Admins {
     const valor = editando[producto.id] !== undefined ? editando[producto.id] : producto.stock;
     const finalStock = Math.max(0, Math.floor(valor));
 
-    this.catalogoService.actualizarStock(producto.id, finalStock);
-
-    this.stockEnEdicion.update((prev) => {
-      const copia = { ...prev };
-      delete copia[producto.id];
-      return copia;
+    this.catalogoService.actualizarStock(producto.id, finalStock).subscribe({
+      next: () => {
+        this.stockEnEdicion.update((prev) => {
+          const copia = { ...prev };
+          delete copia[producto.id];
+          return copia;
+        });
+        this.mostrarToast(`✓ Stock fijado en ${finalStock} unidades`);
+      },
+      error: (err) => this.mostrarToast(`⚠ No se pudo guardar el stock: ${this.catalogoService.mensajeDeError(err)}`),
     });
-
-    this.mostrarToast(`✓ Stock fijado en ${finalStock} unidades`);
   }
 
   // =========================================================================
@@ -156,11 +166,18 @@ export class Admins {
 
   ejecutarEliminar(): void {
     const prod = this.productoAEliminar();
-    if (prod) {
-      this.catalogoService.eliminarProducto(prod.id);
-      this.mostrarToast(`🗑 Se ha quitado "${prod.nombre}" del catálogo`);
-      this.productoAEliminar.set(null);
-    }
+    if (!prod) return;
+
+    this.catalogoService.eliminarProducto(prod.id).subscribe({
+      next: () => {
+        this.mostrarToast(`🗑 Se ha quitado "${prod.nombre}" del catálogo`);
+        this.productoAEliminar.set(null);
+      },
+      error: (err) => {
+        this.mostrarToast(`⚠ No se pudo eliminar: ${this.catalogoService.mensajeDeError(err)}`);
+        this.productoAEliminar.set(null);
+      },
+    });
   }
 
   // =========================================================================
@@ -193,30 +210,43 @@ export class Admins {
   guardarNuevoProducto(): void {
     const f = this.formNuevo();
     if (!f.nombre.trim()) {
-      alert('Por favor escribe el nombre del producto.');
+      this.mostrarToast('⚠ Por favor escribe el nombre del producto.');
       return;
     }
+    if (this.guardando()) return;
 
-    this.catalogoService.agregarProducto({
-      nombre: f.nombre.trim(),
-      categoria: f.categoria,
-      descripcion: f.descripcion.trim() || 'Elaborado artesanalmente con recetas tradicionales.',
-      sabor: f.sabor.trim() || 'Sabor tradicional',
-      precio: Math.max(0, Number(f.precio) || 0),
-      stock: Math.max(0, Number(f.stock) || 0),
-      imagen: f.imagen.trim() || this.imagenesSugeridas[0].url,
-      badge: f.badge.trim() || undefined,
-      porciones: f.porciones.trim() || 'Porción individual',
-    });
+    this.guardando.set(true);
 
-    this.cerrarModalAgregar();
-    this.mostrarToast(`✨ ¡Producto "${f.nombre}" agregado con éxito al catálogo!`);
+    this.catalogoService
+      .agregarProducto({
+        nombre: f.nombre.trim(),
+        categoria: f.categoria,
+        descripcion: f.descripcion.trim() || 'Elaborado artesanalmente con recetas tradicionales.',
+        sabor: f.sabor.trim() || 'Sabor tradicional',
+        precio: Math.max(0, Number(f.precio) || 0),
+        stock: Math.max(0, Math.floor(Number(f.stock) || 0)),
+        imagen: f.imagen.trim() || this.imagenesSugeridas[0].url,
+        badge: f.badge.trim() || null,
+        porciones: f.porciones.trim() || 'Porción individual',
+      })
+      .subscribe({
+        next: () => {
+          this.guardando.set(false);
+          this.cerrarModalAgregar();
+          this.mostrarToast(`✨ ¡Producto "${f.nombre}" agregado con éxito al catálogo!`);
+        },
+        error: (err) => {
+          this.guardando.set(false);
+          this.mostrarToast(`⚠ No se pudo agregar el producto: ${this.catalogoService.mensajeDeError(err)}`);
+        },
+      });
   }
 
+  /** Recarga el catálogo desde la base de datos y vacía la selección */
   restablecerCatalogo(): void {
-    if (confirm('¿Deseas restablecer el catálogo con los productos originales por defecto?')) {
+    if (confirm('¿Deseas recargar el catálogo desde la base de datos?')) {
       this.catalogoService.restablecerValoresPorDefecto();
-      this.mostrarToast('Catálogo restablecido con valores iniciales');
+      this.mostrarToast('Catálogo recargado desde la base de datos');
     }
   }
 

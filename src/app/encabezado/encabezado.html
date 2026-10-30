@@ -45,7 +45,9 @@
                         <span>Catálogo</span>
                     </a>
                 </li>
-                <li class="nav-item">
+
+                <!-- Visible solo para clientes -->
+                <li class="nav-item" *hasRole="'cliente'">
                     <a routerLink="/disena-tuyo" routerLinkActive="active" class="nav-link custom-cake-link"
                         (click)="closeMobileMenu()">
                         <span class="material-symbols-outlined link-icon spark">palette</span>
@@ -53,12 +55,16 @@
                         <span class="mini-tag">Nuevo</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a routerLink="/facturacion" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
+
+                <!-- Visible para Admin y Trabajador, con ruta dinámica basada en el rol -->
+                <li class="nav-item" *hasRole="['admin', 'trabajador']">
+                    <a [routerLink]="'/facturacion/' + facturacionService.usuarioActual()?.rol"
+                        routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
                         <span class="material-symbols-outlined link-icon">receipt_long</span>
                         <span>Facturación</span>
                     </a>
                 </li>
+
                 <li class="nav-item">
                     <a routerLink="/sucursales" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">
                         <span class="material-symbols-outlined link-icon">storefront</span>
@@ -66,23 +72,36 @@
                     </a>
                 </li>
 
-                <!-- Botones de Acción (Mis Pedidos y Acceso) -->
-                <li class="nav-item nav-action-item">
+                <!-- Botones de Acción (Mis Pedidos solo para clientes) -->
+                <li class="nav-item nav-action-item" *hasRole="['cliente']">
                     <a routerLink="/mis-pedidos" routerLinkActive="active" class="nav-link orders-link"
                         (click)="closeMobileMenu()">
                         <span class="material-symbols-outlined link-icon">shopping_bag</span>
                         <span>Mis Pedidos</span>
                     </a>
                 </li>
+
+                <!-- Ver Pedidos para Trabajadores y Admin -->
+                <li class="nav-item nav-action-item" *hasRole="['admin', 'trabajador']">
+                    <a [routerLink]="'/pedidos/' + facturacionService.usuarioActual()?.rol"
+                        routerLinkActive="active" class="nav-link staff-orders-link"
+                        (click)="closeMobileMenu()">
+                        <span class="material-symbols-outlined link-icon">receipt_long</span>
+                        <span>Ver Pedidos</span>
+                    </a>
+                </li>
+
                 @if (facturacionService.usuarioActual()) {
                 <li class="nav-item nav-action-item user-logged-item">
                     <div class="user-profile-badge" [attr.data-role]="facturacionService.usuarioActual()?.rol">
                         <span class="material-symbols-outlined user-avatar-icon">account_circle</span>
                         <div class="user-meta-info">
                             <span class="user-greeting">{{ facturacionService.usuarioActual()?.nombre }}</span>
-                            <span class="user-role-label">({{ facturacionService.usuarioActual()?.rol | uppercase }})</span>
+                            <span class="user-role-label">({{ facturacionService.usuarioActual()?.rol | uppercase
+                                }})</span>
                         </div>
-                        <button type="button" class="btn-logout-mini" (click)="facturacionService.logout(); closeMobileMenu()" title="Cerrar sesión">
+                        <button type="button" class="btn-logout-mini"
+                            (click)="facturacionService.logout(); closeMobileMenu()" title="Cerrar sesión">
                             <span class="material-symbols-outlined">logout</span>
                         </button>
                     </div>

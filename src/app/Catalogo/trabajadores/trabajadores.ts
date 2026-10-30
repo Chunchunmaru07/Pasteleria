@@ -19,7 +19,7 @@ export class Trabajadores {
   readonly soloStockBajo = signal(false);
   readonly mensajeToast = signal<string | null>(null);
 
-  /** Almacena el valor temporal de stock en edición para cada producto: id -> nuevoStock */
+  /** Valor temporal de stock en edición para cada producto: id -> nuevoStock */
   readonly stockEnEdicion = signal<{ [id: string]: number }>({});
 
   /** Métricas para trabajadores */
@@ -67,23 +67,26 @@ export class Trabajadores {
   });
 
   // =========================================================================
-  // GESTIÓN DE STOCK (CANTIDAD DISPONIBLE) - EXCLUSIVO TRABAJADORES & ADMIN
+  // GESTIÓN DE STOCK - TRABAJADORES Y ADMIN
   // =========================================================================
 
   /** Ajuste rápido de stock (+1, -1, +5, -5) */
   ajustarStockRapido(producto: Producto, delta: number): void {
     const nuevo = Math.max(0, producto.stock + delta);
-    this.catalogoService.actualizarStock(producto.id, nuevo);
-    this.mostrarToast(`Stock de "${producto.nombre}" actualizado a ${nuevo} piezas`);
+
+    this.catalogoService.actualizarStock(producto.id, nuevo).subscribe({
+      next: () => this.mostrarToast(`Stock de "${producto.nombre}" actualizado a ${nuevo} piezas`),
+      error: (err) => this.mostrarToast(`⚠ No se pudo actualizar el stock: ${this.catalogoService.mensajeDeError(err)}`),
+    });
   }
 
-  /** Obtiene el valor que se está escribiendo en el input de stock */
+  /** Valor que se está escribiendo en el input de stock */
   getValorInputStock(prod: Producto): number {
     const editando = this.stockEnEdicion();
     return editando[prod.id] !== undefined ? editando[prod.id] : prod.stock;
   }
 
-  /** Modifica temporalmente el valor en el input antes de guardar */
+  /** Modifica temporalmente el valor del input antes de guardar */
   setValorInputStock(prodId: string, valor: string): void {
     const num = parseInt(valor, 10);
     this.stockEnEdicion.update((prev) => ({
@@ -92,22 +95,23 @@ export class Trabajadores {
     }));
   }
 
-  /** Guarda el stock escrito manualmente en el input */
+  /** Guarda en la base de datos el stock escrito manualmente */
   guardarStockManual(producto: Producto): void {
     const editando = this.stockEnEdicion();
     const valor = editando[producto.id] !== undefined ? editando[producto.id] : producto.stock;
     const finalStock = Math.max(0, Math.floor(valor));
 
-    this.catalogoService.actualizarStock(producto.id, finalStock);
-
-    // Limpiar estado temporal
-    this.stockEnEdicion.update((prev) => {
-      const copia = { ...prev };
-      delete copia[producto.id];
-      return copia;
+    this.catalogoService.actualizarStock(producto.id, finalStock).subscribe({
+      next: () => {
+        this.stockEnEdicion.update((prev) => {
+          const copia = { ...prev };
+          delete copia[producto.id];
+          return copia;
+        });
+        this.mostrarToast(`✓ Stock fijado en ${finalStock} unidades para "${producto.nombre}"`);
+      },
+      error: (err) => this.mostrarToast(`⚠ No se pudo guardar el stock: ${this.catalogoService.mensajeDeError(err)}`),
     });
-
-    this.mostrarToast(`✓ Stock fijado en ${finalStock} unidades para "${producto.nombre}"`);
   }
 
   // =========================================================================
